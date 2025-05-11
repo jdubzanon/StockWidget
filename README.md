@@ -66,6 +66,11 @@ After installation, launch the app from your application menu or run:
 StockWidget
 ```
 
+# Example of UI
+
+![StockWidget UI](images/StockWidget_UI.png)
+
+
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
