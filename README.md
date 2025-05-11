@@ -38,7 +38,7 @@ mkdir build && cd build
 cmake ..
 cmake --build .
 ```
-You must comment out , commented out code from cmake to build from source.
+You must uncomment out , commented out code from cmake to build from source.
 ## Download and Install
 
 Download the latest release `.deb` package and install it:
