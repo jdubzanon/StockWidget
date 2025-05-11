@@ -128,7 +128,8 @@ bool Backend::run_delete_from_watchlist_operations(const std::string &ticker)
                                    return node.get_ticker() == ticker_to_uppercase;
                                });
 
-        mutable_vector.erase(it);
+        if (it != mutable_vector.end())
+            mutable_vector.erase(it);
     }
 
     //  confirm StockInfo node was deleted from stock_information

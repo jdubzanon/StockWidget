@@ -193,10 +193,10 @@ void guiWindowOps::delete_operations(const std::string &ticker)
     backendops->run_delete_from_financials_operations(ticker);
     backendops->run_delete_from_charts_operations(ticker);
     backendops->run_delete_from_metrics_operations(ticker);
-    file_status.watchlist_empty = backendops->get_watchlist_file_status();
     delete_from_boolean_map(financials_window_booleans, ticker);
     delete_from_boolean_map(selectable_booleans, ticker);
     delete_from_boolean_map(chart_booleans, ticker);
+    file_status.watchlist_empty = backendops->get_watchlist_file_status();
 }
 
 // PRIVATE
@@ -824,38 +824,43 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 generate_watchlist_dropbox(stock);
 
                 ImGui::PopStyleColor(4);
-                if (selectable_booleans.at(stock.get_ticker()))
+
+                if (!selectable_booleans.empty())
                 {
-                    if (!backendops->summary_already_generated(stock.get_ticker()))
-                    {
-                        api_workflow.need_make_api = true;
-                        api_workflow.ticker = stock.get_ticker();
-                        api_workflow.summary_call = true;
-                        popup_booleans.making_api_call_window = true;
-                    }
 
-                    else
+                    if (selectable_booleans.at(stock.get_ticker()))
                     {
-                        const size_t pos = backendops->get_metrics_position_in_vec(stock.get_ticker());
-                        if (static_cast<int>(pos) != -1)
+                        if (!backendops->summary_already_generated(stock.get_ticker()))
                         {
-
-                            Metrics &object = metrics_vec->at(pos);
-                            const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr = object.get_metrics_bucket_ptr();
-                            ImGui::EndTable();
-                            if (!(object.get_quote_type() == "CRYPTOCURRENCY"))
-                            {
-                                generate_metrics_table(metrics_bucket_ptr, stock.get_ticker());
-                            }
-                            else
-                            {
-                                generate_metrics_table_special(metrics_bucket_ptr, stock.get_ticker());
-                            }
-                            float current_pos = ImGui::GetCursorPosY();
-                            next_pos = current_pos;
-                            ImGui::BeginTable("Your Watchlist", 5, ImGuiTableFlags_BordersOuter);
+                            api_workflow.need_make_api = true;
+                            api_workflow.ticker = stock.get_ticker();
+                            api_workflow.summary_call = true;
+                            popup_booleans.making_api_call_window = true;
                         }
-                    }
+
+                        else
+                        {
+                            const size_t pos = backendops->get_metrics_position_in_vec(stock.get_ticker());
+                            if (static_cast<int>(pos) != -1)
+                            {
+
+                                Metrics &object = metrics_vec->at(pos);
+                                const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr = object.get_metrics_bucket_ptr();
+                                ImGui::EndTable();
+                                if (!(object.get_quote_type() == "CRYPTOCURRENCY"))
+                                {
+                                    generate_metrics_table(metrics_bucket_ptr, stock.get_ticker());
+                                }
+                                else
+                                {
+                                    generate_metrics_table_special(metrics_bucket_ptr, stock.get_ticker());
+                                }
+                                float current_pos = ImGui::GetCursorPosY();
+                                next_pos = current_pos;
+                                ImGui::BeginTable("Your Watchlist", 5, ImGuiTableFlags_BordersOuter);
+                            }
+                        }
+                    } //
                 }
             }
         }

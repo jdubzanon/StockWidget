@@ -167,6 +167,7 @@ int main()
             }
         }
 
+        // OPENING CHARTS
         for (const auto &pair : chart_booleans_map)
         {
             if (pair.second)
