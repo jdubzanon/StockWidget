@@ -31,7 +31,7 @@ Make sure you have the following installed on your system to compile and test:
   * `xorg-dev`
 
 # Build from Source
-git clone https://github.com/YourUserName/StockWidget.git
+git clone git@github.com:jdubzanon/StockWidget.git
 cd StockWidget
 mkdir build && cd build
 cmake ..
@@ -39,7 +39,7 @@ cmake --build .
 
 # Download and Install
 Run:
-wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb
+"wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb"
 
 
 Once downloaded go to file where .deb file is and run:
