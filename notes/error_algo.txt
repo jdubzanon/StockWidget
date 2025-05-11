@@ -1,0 +1,11 @@
+try {
+    std::string result = backend.run_single_api_call_operations("AAPL");
+    // Do something with the result
+} catch (const BackendException& e) {
+    if (e.getType() == BackendException::ErrorType::HANDLE_NOT_FOUND) {
+        std::cout << "Error: Handle was not found in the responses map." << std::endl;
+    } else if (e.getType() == BackendException::ErrorType::API_CALL_FAILED) {
+        std::cout << "Error: API call failed." << std::endl;
+    } else {
+        std::cout << "Error: " << e.what() << std::endl;
+    }

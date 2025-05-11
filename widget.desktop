@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=StockWidget
+Comment=A stock market app
+Exec=/usr/local/bin/StockWidget
+Icon=stockwidget
+Terminal=false
+Type=Application
+Categories=Utility;

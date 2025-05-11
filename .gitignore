@@ -1,0 +1,17 @@
+# Build artifacts in root
+/build/
+/*.deb
+
+# IDE files
+/.vscode/
+
+# CMake and build files in any subfolder (including libs)
+**/CMakeFiles/
+**/CMakeCache.txt
+**/Makefile
+**/build/
+**/*.o
+**/*.obj
+**/*~
+
+
