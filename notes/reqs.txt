@@ -1,9 +1,0 @@
-for cmake wayland
-	sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
-	
-OPEN GL
-sudo apt install libgl1 libglfw3 libx11-6 libxrandr2 libxi6 libxcursor1
-
-curl
-sudo apt install libssl-dev
-
