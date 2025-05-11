@@ -39,7 +39,7 @@ cmake --build .
 
 # Download and Install
 Run:
-wget https://github.com/YourUserName/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb
+wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb
 
 
 Once downloaded go to file where .deb file is and run:
