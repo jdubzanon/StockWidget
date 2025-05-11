@@ -21,7 +21,9 @@ private:
 
 private:
     void generate_menubar();
-    void generate_watchlist_dropbox(const StockInfo &stock);
+    void generate_equity_dropbox(const StockInfo &stock);
+    void generate_etf_dropbox(const StockInfo &stock);
+    void generate_crypto_dropbox(const StockInfo &stock);
     void openWebsite(const char *url);
     void reset_arr();
     void set_window_parameters(GLFWwindow *window, ImFont *font_change);

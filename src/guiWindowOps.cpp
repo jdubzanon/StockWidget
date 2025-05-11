@@ -75,7 +75,7 @@ void guiWindowOps::generate_menubar()
 };
 
 // PRIVATE
-void guiWindowOps::generate_watchlist_dropbox(const StockInfo &stock)
+void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
 {
     // DROPBOX CODE BELOW
     const char *action_items[] = {"Chart", "Financials", "Delete"};
@@ -113,7 +113,7 @@ void guiWindowOps::generate_watchlist_dropbox(const StockInfo &stock)
     else if (selected_action == 1)
     {
         // ONLY EQUITYS HAVE FINANCIAL REPORTS
-        if (stock.get_quote_type() == "EQUITY")
+        if (stock.get_quote_type() == "EQUITY") // redundancy
         {
             if (!backendops->financial_report_already_generated(stock.get_ticker()))
             {
@@ -141,6 +141,110 @@ void guiWindowOps::generate_watchlist_dropbox(const StockInfo &stock)
         }
     }
     else if (selected_action == 2)
+    {
+        try
+        {
+            delete_operations(stock.get_ticker());
+        }
+        catch (BackendException &e)
+        {
+            temp_message = e.what();
+            program_state.trigger_error = true;
+            api_workflow.try_again = false;
+        }
+    }
+
+    selected_action = -1;
+}
+
+void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
+{
+    // DROPBOX CODE BELOW
+    const char *action_items[] = {"Chart", "Delete"};
+    static int selected_action = -1;
+    std::string dropbox_label = stock.get_ticker() + "\n" + "Actions";
+    const char *preview_value = (selected_action == -1) ? "Select Action" : action_items[selected_action];
+    if (ImGui::BeginCombo(dropbox_label.c_str(), preview_value))
+    {
+        for (int n = 0; n < IM_ARRAYSIZE(action_items); n++)
+        {
+            bool is_selected = (selected_action == n);
+            if (ImGui::Selectable(action_items[n], is_selected))
+            {
+                selected_action = n;
+            }
+        }
+        ImGui::EndCombo();
+    }
+    if (selected_action == 0)
+    {
+        if (!backendops->chart_already_generated(stock.get_ticker()))
+        {
+            chart_booleans.at(stock.get_ticker()) = true;
+            program_state.dropbox_chart_clicked = true;
+            api_workflow.need_make_api = true;
+            api_workflow.single_api_call = true;
+            api_workflow.chart_call = true;
+            api_workflow.ticker = stock.get_ticker();
+        }
+        else
+        {
+            chart_booleans.at(stock.get_ticker()) = true;
+        }
+    }
+    else if (selected_action == 1)
+    {
+        try
+        {
+            delete_operations(stock.get_ticker());
+        }
+        catch (BackendException &e)
+        {
+            temp_message = e.what();
+            program_state.trigger_error = true;
+            api_workflow.try_again = false;
+        }
+    }
+
+    selected_action = -1;
+}
+
+void guiWindowOps::generate_crypto_dropbox(const StockInfo &stock)
+{
+    // DROPBOX CODE BELOW
+    const char *action_items[] = {"Chart", "Delete"};
+    static int selected_action = -1;
+    std::string dropbox_label = stock.get_ticker() + "\n" + "Actions";
+    const char *preview_value = (selected_action == -1) ? "Select Action" : action_items[selected_action];
+    if (ImGui::BeginCombo(dropbox_label.c_str(), preview_value))
+    {
+        for (int n = 0; n < IM_ARRAYSIZE(action_items); n++)
+        {
+            bool is_selected = (selected_action == n);
+            if (ImGui::Selectable(action_items[n], is_selected))
+            {
+                selected_action = n;
+            }
+        }
+        ImGui::EndCombo();
+    }
+    if (selected_action == 0)
+    {
+        if (!backendops->chart_already_generated(stock.get_ticker()))
+        {
+            chart_booleans.at(stock.get_ticker()) = true;
+            program_state.dropbox_chart_clicked = true;
+            api_workflow.need_make_api = true;
+            api_workflow.single_api_call = true;
+            api_workflow.chart_call = true;
+            api_workflow.ticker = stock.get_ticker();
+        }
+        else
+        {
+            chart_booleans.at(stock.get_ticker()) = true;
+        }
+    }
+    else if (selected_action == 1)
     {
         try
         {
@@ -821,7 +925,14 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 ImGui::TableSetColumnIndex(4);
 
                 // DROPBOX COMBO BOX GENERATION FUNCTION
-                generate_watchlist_dropbox(stock);
+                if (stock.get_quote_type() == "EQUITY")
+                    generate_equity_dropbox(stock);
+
+                else if (stock.get_quote_type() == "ETF")
+                    generate_etf_dropbox(stock);
+
+                else if (stock.get_quote_type() == "CRYPTOCURRENCY")
+                    generate_crypto_dropbox(stock);
 
                 ImGui::PopStyleColor(4);
 
