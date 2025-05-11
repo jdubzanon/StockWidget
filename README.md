@@ -1,16 +1,15 @@
 # StockWidget
 
-StockWidget is a graphical desktop application FOR LINUX OS ONLY that displays real-time stock market data using OpenGL, ImGui, and GLFW.
+StockWidget is a graphical desktop application, FOR LINUX OS ONLY, that displays real-time stock market data using OpenGL, ImGui, and GLFW.
 
 ## Features
 
 * Live stock quote retrieval via Yahoo Finance API
 * Interactive user interface built with ImGui
 
-## Prerequisites to build from source
+## Prerequisites for building from source
 
-Make sure you have the following installed on your system to compile and test:
-
+Ensure you have the following installed on your system:
 
 * C++17 compatible compiler
 * CMake (version 3.22 or higher)
@@ -30,17 +29,42 @@ Make sure you have the following installed on your system to compile and test:
   * `libxkbcommon-dev`
   * `xorg-dev`
 
-# Build from Source
+## Build from Source
+
+```bash
 git clone git@github.com:jdubzanon/StockWidget.git
 cd StockWidget
 mkdir build && cd build
 cmake ..
 cmake --build .
+```
 
-# Download and Install
-Run:
-"wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb"
+## Download and Install
 
+Download the latest release `.deb` package and install it:
 
-Once downloaded go to file where .deb file is and run:
+```bash
+wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget_1.0-1_amd64.deb
 sudo apt install ./stockwidget_1.0-1_amd64.deb
+```
+
+
+
+Follow the prompts to confirm package metadata.
+
+## Usage
+
+After installation, launch the app from your application menu or run:
+
+```bash
+StockWidget
+```
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+## License
+
+Specify your license here, e.g., MIT License. You can include a `LICENSE.md` file for full details.
+
