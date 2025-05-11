@@ -268,10 +268,16 @@ bool JsonParseOps::parse_balancesheet_statement(const std::string &returned_json
     {
         return false;
     }
-
+    if (jsonData.isNull() || jsonData.empty())
+        return false;
     //  GETTING THE DATES FOR BALANCE SHEET
     const Json::Value &date_root = jsonData["balanceSheetHistory"];
+    if (date_root.isNull() || date_root.empty())
+        return false;
+
     const Json::Value &date_array = date_root["balanceSheetStatements"];
+    if (date_array.isNull() || date_array.empty() || !date_array.isArray())
+        return false;
 
     if (date_array.isArray())
     {
@@ -300,14 +306,23 @@ bool JsonParseOps::parse_balancesheet_statement(const std::string &returned_json
         {
 
             // CREATING NESTED DICTIONARY
+
             ptr->reporting_map[accounting_entry.asString()];
-            // CREATING THE KEY
+            // CREATING THE KEY //this holds the keys in order since unordered map is well.. unordered
             ptr->accounting_items.push_back(accounting_entry.asString());
+
             for (const Json::Value &mini_obj : entry_array)
             {
                 const Json::Value &reported_value_obj = mini_obj["reportedValue"];
                 // ADDING DATE AND REPORTED VALUE TO THE RECENTLY ADDED KEY
-                ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), reported_value_obj["fmt"].asString());
+                if (!mini_obj.isNull() && !mini_obj.empty())
+                {
+                    const Json::Value &fmt = reported_value_obj["fmt"];
+                    if (!fmt.isNull())
+                        ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), reported_value_obj["fmt"].asString());
+                    else
+                        ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), "N/A");
+                }
             }
         }
     }
@@ -329,10 +344,16 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
     {
         return false;
     }
+    if (jsonData.isNull() || jsonData.empty())
+        return false;
 
     //  GETTING THE DATES FOR BALANCE SHEET
     const Json::Value &date_root = jsonData["cashflowStatementHistory"];
+    if (date_root.isNull() || date_root.empty())
+        return false;
     const Json::Value &date_array = date_root["cashflowStatements"];
+    if (date_array.isNull() || date_array.empty() || !date_array.isArray())
+        return false;
     if (date_array.isArray())
     {
         int balance_sheet_date_entry = 1;
@@ -351,6 +372,8 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
     // GETTING INDIVIDUAL ENTRIES SHEET ITEMS
 
     Json::Value &timeseries = jsonData["timeseries"];
+    if (timeseries.isNull() || timeseries.empty())
+        return false;
     for (Json::Value::const_iterator itr = timeseries.begin(); itr != timeseries.end(); ++itr)
     {
         const Json::Value &accounting_entry = itr.name();
@@ -360,6 +383,7 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
 
             // CREATING NESTED DICTIONARY ADDING TO ACCOUNTING ITEMS
             std::string acct_entry = accounting_entry.asString();
+            // THE REGEX IS SKIPPING OVER TRAILING ACCOUTING ENTRIES IN JSON
             std::regex pattern("trailing");
             if (!std::regex_search(acct_entry, pattern))
             {
@@ -367,10 +391,24 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
                 ptr->accounting_items.push_back(accounting_entry.asString());
                 for (const Json::Value &mini_obj : entry_array)
                 {
-                    const Json::Value &reported_value_obj = mini_obj["reportedValue"];
-                    ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), reported_value_obj["fmt"].asString());
+                    if (!mini_obj.isNull() && !mini_obj.empty())
+                    {
+                        const Json::Value &reported_value_obj = mini_obj["reportedValue"];
+                        if (!reported_value_obj.isNull() && !reported_value_obj.empty())
+                        {
+                            const Json::Value &fmt = reported_value_obj["fmt"];
+                            if (!fmt.isNull())
+                                ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), reported_value_obj["fmt"].asString());
+                            else
+                                ptr->reporting_map[accounting_entry.asString()].insert_or_assign(mini_obj["asOfDate"].asString(), "N/A");
+                        }
+                    }
                 }
             }
+        }
+        else
+        {
+            return false;
         }
     }
     return true;
@@ -389,8 +427,22 @@ bool JsonParseOps::parse_earnings_statement(const std::string &returned_json, co
     {
         return false;
     }
+
+    if (jsonData.isNull() || jsonData.empty())
+        return false;
+
     const Json::Value &root = jsonData["earnings"];
-    const Json::Value &qt_eps = root["earningsChart"]["quarterly"];
+    if (root.isNull() || root.empty())
+        return false;
+
+    const Json::Value &qt_eps_root = root["earningsChart"];
+    if (qt_eps_root.isNull() || qt_eps_root.empty())
+        return false;
+
+    const Json::Value &qt_eps = qt_eps_root["quarterly"];
+    if (qt_eps.isNull() || qt_eps.empty())
+        return false;
+
     if (qt_eps.isArray())
     {
         for (const auto &dict : qt_eps)

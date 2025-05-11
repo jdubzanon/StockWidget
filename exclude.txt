@@ -6,3 +6,4 @@ build/
 make/
 notes/jtest/
 notes/vtest/
+/.git/
