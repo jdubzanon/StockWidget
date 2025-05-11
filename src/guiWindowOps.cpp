@@ -113,7 +113,7 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
     else if (selected_action == 1)
     {
         // ONLY EQUITYS HAVE FINANCIAL REPORTS
-        if (stock.get_quote_type() == "EQUITY") // redundancy
+        if (stock.get_quote_type() == "EQUITY") // GUARD AGAINST DEFAULT OPTION, IF stock.quote_type() is other than known definitions
         {
             if (!backendops->financial_report_already_generated(stock.get_ticker()))
             {
@@ -933,6 +933,9 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
 
                 else if (stock.get_quote_type() == "CRYPTOCURRENCY")
                     generate_crypto_dropbox(stock);
+
+                else
+                    generate_equity_dropbox(stock);
 
                 ImGui::PopStyleColor(4);
 
