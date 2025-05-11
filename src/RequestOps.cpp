@@ -244,8 +244,6 @@ std::unordered_map<std::string, std::string> &RequestOps::get_mutable_watchlist_
     return watchlist_map;
 }
 
-// there is a minor bug here where curl handle is reassigned in curlhandles ticker map but it doesnt matter beacuse its only useful for deletion. if it doesnt exists then i dont need to delete it anyway
-// see curlhandls_map_delete_item()
 bool RequestOps::perform_single_request_watchlist(const std::string &ticker, const std::string &key)
 {
     std::string url_head;
@@ -321,7 +319,6 @@ bool RequestOps::perform_single_request_summary(const std::string &ticker, const
 
 void RequestOps::perform_single_request_charts(const std::string &ticker, const std::string &key, ChartInfo &c)
 {
-    // ChartInfo c(ticker);
     std::string url_head = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-chart?symbol=";
     std::string url_tail = "&region=US&lang=en-US&useYfid=true&includeAdjustedClose=true&events=div%2Csplit%2Cearn&range=1y&interval=1d&includePrePost=false";
     std::string url_concat = url_head + ticker + url_tail;

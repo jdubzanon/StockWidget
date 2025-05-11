@@ -141,7 +141,6 @@ bool JsonParseOps::apikey_confimed(const std::string &response)
 
     // logic: if message is null or empty it didnt find message so api key is confimed because it got back a valid response
     return (message.isNull() || message.empty()) ? true : false;
-    // return message.asString().empty();
 }
 
 JsonParseOps::JSON_CODES JsonParseOps::ticker_confirmed(const std::string &response)
@@ -270,7 +269,6 @@ bool JsonParseOps::parse_balancesheet_statement(const std::string &returned_json
         return false;
     }
 
-    // ######################################################################
     //  GETTING THE DATES FOR BALANCE SHEET
     const Json::Value &date_root = jsonData["balanceSheetHistory"];
     const Json::Value &date_array = date_root["balanceSheetStatements"];
@@ -289,8 +287,6 @@ bool JsonParseOps::parse_balancesheet_statement(const std::string &returned_json
             }
         }
     }
-
-    //  ######################################################################
 
     // GETTING BALANCE SHEET ITEMS
 
@@ -334,7 +330,6 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
         return false;
     }
 
-    // ######################################################################
     //  GETTING THE DATES FOR BALANCE SHEET
     const Json::Value &date_root = jsonData["cashflowStatementHistory"];
     const Json::Value &date_array = date_root["cashflowStatements"];
@@ -352,8 +347,6 @@ bool JsonParseOps::parse_cashflow_statement(const std::string &returned_json, co
             }
         }
     }
-
-    //  ######################################################################
 
     // GETTING INDIVIDUAL ENTRIES SHEET ITEMS
 

@@ -331,15 +331,3 @@ int main()
 
     return 0;
 }
-
-// DO NOT ERASE GOING TO NEED THIS FOR ADDING TO WATCHLIST
-//  if (g->get_program_startup())
-//  {
-//      g->popup_booleans.making_api_call_window = true;
-//      g->set_need_api_call(true);
-//      g->making_api_call_window(window, midsize_font, g->get_need_api_call());
-//      g->make_api_call(false, "none");
-//      g->set_need_api_call(false);
-//      g->popup_booleans.making_api_call_window = false;
-//      g->set_program_startup(false);
-//  }

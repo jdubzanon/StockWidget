@@ -82,7 +82,6 @@ void guiWindowOps::generate_watchlist_dropbox(const StockInfo &stock)
     static int selected_action = -1;
     std::string dropbox_label = stock.get_ticker() + "\n" + "Actions";
     const char *preview_value = (selected_action == -1) ? "Select Action" : action_items[selected_action];
-    // const char *item_current = action_items[0];
     if (ImGui::BeginCombo(dropbox_label.c_str(), preview_value))
     {
         for (int n = 0; n < IM_ARRAYSIZE(action_items); n++)
@@ -238,7 +237,6 @@ void guiWindowOps::generate_table(StockFinancials::BalanceSheetItems *ptr, const
     ImGui::Text("Account ID");
     for (int i = 1; i < static_cast<int>(ptr->dates_tracker.size()) + 1; i++)
     {
-        // ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(i);
         ImGui::Text("%s", ptr->dates_tracker.at(i).c_str());
     }
@@ -423,7 +421,6 @@ void guiWindowOps::generate_yearly_earnings_table(StockFinancials::EarningsItems
         // saving this for later need to generate chart
         double converted_profit_margin = std::round(profit_margin_raw * 100.0) / 100.0;
         ptr->percent_vec.push_back(converted_profit_margin);
-        // ################################################
         std::string shorted_rev = shorten_number(revenue);
         std::string shorted_earnings = shorten_number(earnings);
         std::string date(*it);
@@ -555,12 +552,6 @@ void guiWindowOps::generate_metrics_table_special(const std::vector<std::unorder
     }
     ImGui::PopID();
 }
-
-// PRIVATE
-// void guiWindowOps::set_permission_setting(bool set)
-// {
-//     perms_set = true;
-// }
 
 // ##############################################PUBLIC#######################
 
@@ -708,7 +699,6 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
     ImGui::SetNextWindowPos(watchlist_pos, ImGuiCond_Once);
     ImGui::GetStyle().WindowRounding = 10.0f;
     ImGui::GetStyle().FrameRounding = 10.0f; // This rounds all buttons globally (set a value > 0)
-    // ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10, 5));
 
     ImGuiWindowFlags flags;
 
@@ -775,7 +765,6 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
             }
 
             ImGui::TableHeadersRow();
-            // ImGui::TableNextRow();
 
             float next_pos = ImGui::GetCursorPosY();
             for (const auto &stock : *(watchlist_vec))

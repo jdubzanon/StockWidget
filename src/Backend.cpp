@@ -131,9 +131,6 @@ bool Backend::run_delete_from_watchlist_operations(const std::string &ticker)
         mutable_vector.erase(it);
     }
 
-    // DELETE ITEM FROM CURLHANDLES MAP
-    // requestops->curlhandles_map_delete_item(ticker_to_uppercase);
-
     //  confirm StockInfo node was deleted from stock_information
     if (!jsonparseops->confirm_deletion(ticker_to_uppercase))
     {
@@ -373,7 +370,7 @@ bool Backend::run_multi_watchlist_api_calls_operations()
         std::this_thread::sleep_for(std::chrono::milliseconds(1250));
     } // end of while loop
 
-    // RequestOps::check_curl_msg deletes all bad responses, if all responses are bad then thats a possible bad internet connection or api failure
+    // RequestOps::manually_delete_responses() deletes all bad responses, if all responses are bad then thats a possible bad internet connection or api failure
 
     if (watchlist_mutable_map.empty())
     {
