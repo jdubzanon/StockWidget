@@ -327,13 +327,9 @@ bool Backend::run_multi_watchlist_api_calls_operations()
     watchlist_mutable_map.clear();
 
     // BUILD DECRYPTION MAP AND DECRYPT API KEY
-    struct curl_slist *headers = requestops->get_headers();
     std::string api_key = "";
-    if (!headers)
-    {
-        api_key = run_decrypt_apikey_operations();
-        encryptops->clear_map();
-    }
+    api_key = run_decrypt_apikey_operations();
+    encryptops->clear_map();
 
     // BUILDING RESPONSE MAP
     std::vector<std::string> endpoints = fileops->create_api_endpoints_from_watchlist();
@@ -411,8 +407,8 @@ bool Backend::run_multi_watchlist_api_calls_operations()
     // CLEAR MAPS AFTER USING
     handle_to_ticker_map.clear();
     watchlist_mutable_map.clear();
-    // clean up curl then check for any for returned unavailable information from api
     requestops->multicurl_cleanup();
+
     if (unavail_on && parsing_failed_on)
     {
         std::string header = "Multiple Issues Getting Info for:\n";
