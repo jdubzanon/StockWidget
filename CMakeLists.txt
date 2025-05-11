@@ -87,7 +87,7 @@ target_link_libraries(stocklib
 add_executable(StockWidget src/main.cpp)
 target_link_libraries(StockWidget PRIVATE stocklib)
 
-#compile conditions, commented out .deb build, TO RUN FROM COMPILE YOU MUST UNCOMMENT CODE UNDER HERE!!
+#compile conditions, commented out .deb build, TO RUN FROM COMPILE YOU MUST UNCOMMENT IF ITS COMMENTED OUT !!
 target_compile_definitions(StockWidget PRIVATE DEV_MODE)
 
 

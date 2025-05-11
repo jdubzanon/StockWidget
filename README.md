@@ -48,6 +48,12 @@ wget https://github.com/jdubzanon/StockWidget/releases/download/v1.0/stockwidget
 sudo apt install ./stockwidget_1.0-1_amd64.deb
 ```
 
+# To Uninstall Program
+```bash
+sudo dpkg -r StockWidget
+cd ~/.local/share
+rm -rf stock_widget
+```
 
 
 Follow the prompts to confirm package metadata.
