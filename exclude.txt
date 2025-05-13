@@ -3,7 +3,4 @@ libs/glfw/
 libs/imgui/
 libs/implot/
 build/
-make/
-notes/jtest/
-notes/vtest/
 /.git/
