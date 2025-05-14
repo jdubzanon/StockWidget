@@ -1,0 +1,7 @@
+Must populate folder first run inside folder
+
+git clone git@github.com:glfw/glfw.git
+
+git clone git@github.com:ocornut/imgui.git
+
+git clone git@github.com:epezent/implot.git
