@@ -1273,6 +1273,7 @@ void guiWindowOps::error_window(GLFWwindow *window, ImFont *font_change, bool &o
     if (ImGui::Button("Close"))
     {
 
+        std::cout << "close button pressed" << std::endl;
         reset_arr();
         reset_necessary_guiops_booleans();
         open = false;
@@ -1313,4 +1314,5 @@ void guiWindowOps::reset_necessary_guiops_booleans()
     program_state.trigger_error = false;
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;
+    std::cout << "reset has occured" << std::endl;
 }

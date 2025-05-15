@@ -294,6 +294,9 @@ int main()
                         {
                             g->api_workflow.try_again = false;
                             g->api_workflow.need_make_api = false;
+                            g->program_state.adding_api = false;
+                            g->program_state.changing_api = false;
+                            // g->reset_necessary_guiops_booleans();
                         }
                         else
                         {

@@ -127,6 +127,7 @@ JsonParseOps::JSON_CODES JsonParseOps::apikey_confimed(const std::string &respon
 {
     std::string match = "You are not subscribed to this API.";
     std::string match_two = "Too many requests";
+    std::string match_three = "Invalid API key.";
     std::string extracted_message = "";
     Json::CharReaderBuilder reader;
     Json::Value root;
@@ -136,6 +137,7 @@ JsonParseOps::JSON_CODES JsonParseOps::apikey_confimed(const std::string &respon
     {
         return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
     }
+    std::cout << "response is " << response << std::endl;
     Json::Value &message = root["message"];
 
     if (message.isString())
@@ -147,6 +149,12 @@ JsonParseOps::JSON_CODES JsonParseOps::apikey_confimed(const std::string &respon
 
         std::size_t pos_two = extracted_message.find(match_two);
         if (pos_two != std::string::npos)
+        {
+            // std::cout << "pos two " << (pos_two != std::string::npos) << std::endl;
+            return JsonParseOps::JSON_CODES::API_KEY_FAILED;
+        }
+        std::size_t pos_three = extracted_message.find(match_three);
+        if (pos_three != std::string::npos)
             return JsonParseOps::JSON_CODES::API_KEY_FAILED;
     }
 
