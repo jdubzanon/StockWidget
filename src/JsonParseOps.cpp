@@ -123,24 +123,34 @@ bool JsonParseOps::confirm_deletion(const std::string &ticker)
     return (it == stock_information.end());
 }
 
-bool JsonParseOps::apikey_confimed(const std::string &response)
+JsonParseOps::JSON_CODES JsonParseOps::apikey_confimed(const std::string &response)
 {
+    std::string match = "You are not subscribed to this API.";
+    std::string match_two = "Too many requests";
+    std::string extracted_message = "";
     Json::CharReaderBuilder reader;
     Json::Value root;
     std::string errs;
     std::istringstream stream(response);
     if (!Json::parseFromStream(reader, stream, &root, &errs))
     {
-        return false;
+        return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
     }
-    if (root.isNull() || root.empty())
-    {
-        return false;
-    }
-    const Json::Value &message = root["message"];
+    Json::Value &message = root["message"];
 
-    // logic: if message is null or empty it didnt find message so api key is confimed because it got back a valid response
-    return (message.isNull() || message.empty()) ? true : false;
+    if (message.isString())
+    {
+        extracted_message = message.asString();
+        std::size_t pos = extracted_message.find(match);
+        if (pos != std::string::npos)
+            return JsonParseOps::JSON_CODES::API_KEY_FAILED;
+
+        std::size_t pos_two = extracted_message.find(match_two);
+        if (pos_two != std::string::npos)
+            return JsonParseOps::JSON_CODES::API_KEY_FAILED;
+    }
+
+    return JsonParseOps::JSON_CODES::API_KEY_CONFIRMED;
 }
 
 JsonParseOps::JSON_CODES JsonParseOps::ticker_confirmed(const std::string &response)

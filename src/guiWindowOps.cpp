@@ -49,6 +49,7 @@ void guiWindowOps::generate_menubar()
             {
                 if (ImGui::MenuItem("Change Api Key"))
                 {
+                    reset_necessary_guiops_booleans();
                     // these two toggle what is being displayed on the window
                     program_state.adding_api = false; // redundancy
                     program_state.changing_api = true;
@@ -942,39 +943,44 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 if (!selectable_booleans.empty())
                 {
 
-                    if (selectable_booleans.at(stock.get_ticker()))
+                    auto it = selectable_booleans.find(stock.get_ticker());
+                    if (it != selectable_booleans.end())
                     {
-                        if (!backendops->summary_already_generated(stock.get_ticker()))
-                        {
-                            api_workflow.need_make_api = true;
-                            api_workflow.ticker = stock.get_ticker();
-                            api_workflow.summary_call = true;
-                            popup_booleans.making_api_call_window = true;
-                        }
 
-                        else
+                        if (selectable_booleans.at(stock.get_ticker()))
                         {
-                            const size_t pos = backendops->get_metrics_position_in_vec(stock.get_ticker());
-                            if (static_cast<int>(pos) != -1)
+                            if (!backendops->summary_already_generated(stock.get_ticker()))
                             {
-
-                                Metrics &object = metrics_vec->at(pos);
-                                const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr = object.get_metrics_bucket_ptr();
-                                ImGui::EndTable();
-                                if (!(object.get_quote_type() == "CRYPTOCURRENCY"))
-                                {
-                                    generate_metrics_table(metrics_bucket_ptr, stock.get_ticker());
-                                }
-                                else
-                                {
-                                    generate_metrics_table_special(metrics_bucket_ptr, stock.get_ticker());
-                                }
-                                float current_pos = ImGui::GetCursorPosY();
-                                next_pos = current_pos;
-                                ImGui::BeginTable("Your Watchlist", 5, ImGuiTableFlags_BordersOuter);
+                                api_workflow.need_make_api = true;
+                                api_workflow.ticker = stock.get_ticker();
+                                api_workflow.summary_call = true;
+                                popup_booleans.making_api_call_window = true;
                             }
-                        }
-                    } //
+
+                            else
+                            {
+                                const size_t pos = backendops->get_metrics_position_in_vec(stock.get_ticker());
+                                if (static_cast<int>(pos) != -1)
+                                {
+
+                                    Metrics &object = metrics_vec->at(pos);
+                                    const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr = object.get_metrics_bucket_ptr();
+                                    ImGui::EndTable();
+                                    if (!(object.get_quote_type() == "CRYPTOCURRENCY"))
+                                    {
+                                        generate_metrics_table(metrics_bucket_ptr, stock.get_ticker());
+                                    }
+                                    else
+                                    {
+                                        generate_metrics_table_special(metrics_bucket_ptr, stock.get_ticker());
+                                    }
+                                    float current_pos = ImGui::GetCursorPosY();
+                                    next_pos = current_pos;
+                                    ImGui::BeginTable("Your Watchlist", 5, ImGuiTableFlags_BordersOuter);
+                                }
+                            }
+                        } //
+                    }
                 }
             }
         }
@@ -1268,8 +1274,8 @@ void guiWindowOps::error_window(GLFWwindow *window, ImFont *font_change, bool &o
     {
 
         reset_arr();
-        open = false;
         reset_necessary_guiops_booleans();
+        open = false;
     }
     ImGui::PopFont();
     ImGui::End();

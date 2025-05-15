@@ -50,11 +50,15 @@ void RequestOps::set_up_multi_handle_watchlist(const std::vector<std::string> &u
         multi_handle = curl_multi_init();
     }
 
-    if (!headers)
+    if (headers)
     {
-
-        add_headers(key);
+        curl_slist_free_all(headers);
+        headers = NULL;
     }
+
+    if (!headers)
+        add_headers(key);
+
     for (const std::string &url : urls)
     {
 
@@ -119,10 +123,14 @@ bool RequestOps::setup_multirequest_financials(const std::string &ticker, const 
     {
         multi_handle = curl_multi_init();
     }
-    if (!headers)
+    if (headers)
     {
-        add_headers(key);
+        curl_slist_free_all(headers);
+        headers = NULL;
     }
+
+    if (!headers)
+        add_headers(key);
     for (const std::string &url : urls)
     {
 
@@ -255,6 +263,15 @@ bool RequestOps::perform_single_request_watchlist(const std::string &ticker, con
         return false;
     }
 
+    if (headers)
+    {
+        curl_slist_free_all(headers);
+        headers = NULL;
+    }
+
+    if (!headers)
+        add_headers(key);
+
     url_head = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-quote-summary?symbol=";
     url_foot = "&lang=en-US&region=US";
     url_concat = (url_head + ticker + url_foot);
@@ -294,6 +311,15 @@ bool RequestOps::perform_single_request_summary(const std::string &ticker, const
     {
         return false;
     }
+    std::cout << key << std::endl;
+    if (headers)
+    {
+        curl_slist_free_all(headers);
+        headers = NULL;
+    }
+
+    if (!headers)
+        add_headers(key);
 
     std::string head = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-summary?lang=en-US&symbol=";
     std::string tail = "&region=US";

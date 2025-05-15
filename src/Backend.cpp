@@ -70,7 +70,21 @@ bool Backend::run_add_to_watchlist_operations(const std::string &ticker)
     run_single_api_call_operations(ticker_to_uppercase);
 
     std::string &returned_json = mutable_response_map.at(ticker_to_uppercase);
+    // ############################################################
+    JsonParseOps::JSON_CODES apikey_conf_code = jsonparseops->apikey_confimed(returned_json);
+    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
+    {
+        mutable_response_map.clear();
+        // add holdings key vec clear
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "Did you change your API Key?\nYour key failed");
+    }
 
+    else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
+    {
+        mutable_response_map.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with the json parsing\nTry again?");
+    }
+    // #################################################################
     jsonparseops->clean_resonse(returned_json);
 
     JsonParseOps::JSON_CODES jsonops_code = run_internal_parsing_operations(returned_json, ticker_to_uppercase);
@@ -207,10 +221,11 @@ void Backend::run_delete_from_metrics_operations(const std::string &ticker)
 }
 
 // PUBLIC
-bool Backend::run_add_api_key_operations(const std::string &api_key)
+void Backend::run_add_api_key_operations(const std::string &api_key)
 {
 
     // ENCRYPTION
+    encryptops->clear_map();
     encryptops->generate_key_iv();
     encryptops->encrypt_api_key(api_key);
 
@@ -222,33 +237,39 @@ bool Backend::run_add_api_key_operations(const std::string &api_key)
     {
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "API call failed. try again..");
     }
-    else
+
+    const std::string &response = watchlist_map.at("AAPL");
+    JsonParseOps::JSON_CODES apikey_conf_code = jsonparseops->apikey_confimed(response);
+    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
     {
-        const std::string &response = watchlist_map.at("AAPL");
-        bool confirmed = jsonparseops->apikey_confimed(response);
-        if (!confirmed)
-        {
-            watchlist_map.clear();
-            throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...");
-        }
         watchlist_map.clear();
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...");
     }
-
-    // WRITE ENCRYPTION IF THE API KEY IS CONFIRMED
-    const std::unordered_map<std::string, std::vector<uint8_t>> *immut_map = encryptops->get_immutable_map();
-    bool failed_to_mod_iv_file = fileops->add_key_iv_info_to_file(immut_map);
-    bool failed_to_mod_api_file = fileops->add_encrypted_api_key_to_file(immut_map);
-    // IF ISSUE WRITING TO FILE THROW ERROR
-    if (failed_to_mod_api_file || failed_to_mod_iv_file)
+    else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
     {
-        throw BackendException(BackendException::ErrorType::API_FILE_WRITING_FAILED, "something went wrong with writing to files..");
+        watchlist_map.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json Parse Failed!\nTry Again?");
     }
-    immut_map = nullptr;
-    encryptops->clear_map();
-    apifile_is_empty = fileops->apikeyfile_empty();
 
-    // both values originally return false i want the opposite of them to get true, if function returns false then do something
-    return (!failed_to_mod_api_file) && (!failed_to_mod_iv_file);
+    std::cout << static_cast<int>(apikey_conf_code) << std::endl;
+    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_CONFIRMED)
+    {
+        watchlist_map.clear();
+        std::cout << "here api key confirmed backend cpp" << std::endl;
+        // WRITE ENCRYPTION IF THE API KEY IS CONFIRMED
+        const std::unordered_map<std::string, std::vector<uint8_t>> *immut_map = encryptops->get_immutable_map();
+        bool failed_to_mod_iv_file = fileops->add_key_iv_info_to_file(immut_map);
+        bool failed_to_mod_api_file = fileops->add_encrypted_api_key_to_file(immut_map);
+        // IF ISSUE WRITING TO FILE THROW ERROR
+        if (failed_to_mod_api_file || failed_to_mod_iv_file)
+        {
+            throw BackendException(BackendException::ErrorType::API_FILE_WRITING_FAILED, "something went wrong with writing to files..");
+        }
+        immut_map = nullptr;
+        encryptops->clear_map();
+        apifile_is_empty = fileops->apikeyfile_empty();
+    }
+    return;
 }
 
 // INTERNAL NOT USED OUTSIDE CLASS
@@ -285,9 +306,11 @@ std::string Backend::run_decrypt_apikey_operations()
 // WRAPPED IN add_watchlist_operations()
 void Backend::run_single_api_call_operations(const std::string &ticker)
 {
+    encryptops->clear_map();
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
+
     bool success = requestops->perform_single_request_watchlist(ticker, api_key);
     if (!success)
     {
@@ -326,11 +349,13 @@ bool Backend::run_multi_watchlist_api_calls_operations()
     std::unordered_map<std::string, std::string> &watchlist_mutable_map = requestops->get_mutable_watchlist_response_map();
     watchlist_mutable_map.clear();
 
+    encryptops->clear_map();
+
     // BUILD DECRYPTION MAP AND DECRYPT API KEY
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
-
+    std::cout << "api key" << api_key << std::endl;
     // BUILDING RESPONSE MAP
     std::vector<std::string> endpoints = fileops->create_api_endpoints_from_watchlist();
     std::vector<std::string> temp_endpoints;
@@ -464,6 +489,7 @@ bool Backend::run_financials_operations(const std::string &ticker)
         }
     }
 
+    encryptops->clear_map();
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
@@ -567,13 +593,12 @@ bool Backend::run_financials_operations(const std::string &ticker)
 bool Backend::run_generate_summary_operations(const std::string &ticker)
 {
     // CLEAR MAP FIRST
+    auto &summary_map_ref = requestops->get_mutable_summary_map_ref();
+    if (!summary_map_ref.empty())
     {
-        auto &summary_map_ref = requestops->get_mutable_summary_map_ref();
-        if (!summary_map_ref.empty())
-        {
-            summary_map_ref.clear();
-        }
+        summary_map_ref.clear();
     }
+    encryptops->clear_map();
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
@@ -583,6 +608,23 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
 
     const std::unordered_map<std::string, std::string> &sum_map_ref = requestops->get_immutable_summary_map_ref();
     const std::string &returned_json = sum_map_ref.at("summary");
+
+    // ##############################################
+    JsonParseOps::JSON_CODES apikey_conf_code = jsonparseops->apikey_confimed(returned_json);
+    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
+    {
+        std::cout << "summary api key failed" << std::endl;
+        summary_map_ref.clear();
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...");
+    }
+    else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
+    {
+        std::cout << "summary api key failed" << std::endl;
+        summary_map_ref.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json Parse Failed!\nTry Again?");
+    }
+
+    // ####################################
 
     Metrics metric(ticker);
     Metrics &metric_ref = metric;
@@ -646,6 +688,7 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
 // PUBLIC
 bool Backend::run_charting_operations(const std::string &ticker)
 {
+    encryptops->clear_map();
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();

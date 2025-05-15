@@ -290,8 +290,16 @@ int main()
                             g->delete_from_boolean_map(sel_bool_map, target);
                             g->delete_from_boolean_map(chart_bool_map, target);
                         }
-                        g->popup_booleans.open_dynamic_window = true;
-                        g->api_workflow.try_again = true;
+                        else if (e.getType() == BackendException::ErrorType::API_CONFIRMATION_FAILED)
+                        {
+                            g->api_workflow.try_again = false;
+                            g->api_workflow.need_make_api = false;
+                        }
+                        else
+                        {
+                            g->popup_booleans.open_dynamic_window = true;
+                            g->api_workflow.try_again = true;
+                        }
                     }
                     else if (e.getType() == BackendException::ErrorType::API_INFO_CURRENTLY_UNAVAILABLE || e.getType() == BackendException::ErrorType::NO_EQUITY_TYPE)
                     {

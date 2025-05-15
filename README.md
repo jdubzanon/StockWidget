@@ -37,6 +37,7 @@ cd StockWidget
 mkdir build && cd build
 cmake ..
 cmake --build .
+./StockWidget
 ```
 You must uncomment out , commented out code from cmake to build from source, see CMakeLists.txt.
 ## Download and Install
@@ -78,4 +79,4 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 ## License
 
 Specify your license here, e.g., MIT License. You can include a `LICENSE.md` file for full details.
-\
+

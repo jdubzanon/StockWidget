@@ -41,7 +41,9 @@ public:
         INFORMATION_UNAVAILABLE,
         INFORMATION_CONFIRMED,
         ALREADY_IN_INFO_VEC,
-        PUSHED_TO_INFO_VEC
+        PUSHED_TO_INFO_VEC,
+        API_KEY_FAILED,
+        API_KEY_CONFIRMED
 
     };
 
@@ -51,7 +53,7 @@ public:
 
     std::vector<StockInfo> *get_stockinfo_vec_ptr();
     JSON_CODES parse_watchlist_item(const std::string &returned_json);
-    bool apikey_confimed(const std::string &response);
+    JSON_CODES apikey_confimed(const std::string &response);
     JSON_CODES ticker_confirmed(const std::string &response);
     JSON_CODES information_unavailable_check(const std::string &response);
     bool check_financials_availability(const std::string &returned_json);
