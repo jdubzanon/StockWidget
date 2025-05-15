@@ -724,20 +724,22 @@ void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiK
             backendops->run_add_to_watchlist_operations(std::string(ticker));
         }
 
+        if (summary_call)
+        {
+            backendops->run_generate_summary_operations(std::string(ticker));
+        }
+
+        if (chart_call)
+        {
+            backendops->run_charting_operations(std::string(ticker));
+        }
+
         if (apiKeyCall) //
         {
             std::string y(input_bucket);
             backendops->run_add_api_key_operations(y);
             file_status.api_key_empty = backendops->get_api_file_status();
             reset_arr();
-        }
-        if (summary_call)
-        {
-            backendops->run_generate_summary_operations(std::string(ticker));
-        }
-        if (chart_call)
-        {
-            backendops->run_charting_operations(std::string(ticker));
         }
     }
     else
@@ -1273,7 +1275,6 @@ void guiWindowOps::error_window(GLFWwindow *window, ImFont *font_change, bool &o
     if (ImGui::Button("Close"))
     {
 
-        std::cout << "close button pressed" << std::endl;
         reset_arr();
         reset_necessary_guiops_booleans();
         open = false;
@@ -1298,11 +1299,14 @@ void guiWindowOps::setup_window_boolean_maps()
 void guiWindowOps::reset_necessary_guiops_booleans()
 {
     popup_booleans.making_api_call_window = false;
+
     api_workflow.need_make_api = false;
+
     api_workflow.multi_financial_call = false;
     api_workflow.try_again = false;
     api_workflow.summary_call = false;
     api_workflow.chart_call = false;
+    api_workflow.api_key_entry_call = false;
     program_state.adding_api = false;
     program_state.changing_api = false;
     program_state.program_startup = false;
@@ -1314,5 +1318,4 @@ void guiWindowOps::reset_necessary_guiops_booleans()
     program_state.trigger_error = false;
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;
-    std::cout << "reset has occured" << std::endl;
 }

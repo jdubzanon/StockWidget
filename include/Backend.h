@@ -30,6 +30,8 @@ private:
     void run_single_api_call_operations(const std::string &ticker);
     JsonParseOps::JSON_CODES run_internal_parsing_operations(const std::string &response, const std::string &ticker_copy); // returns true or false based on if information was unavailable from api
     std::string get_quote_type_from_stockinfo_vec(const std::string &ticker, const std::string &quote_type);
+    void confirm_apikey(const std::string &response, bool &conf_ref, std::unordered_map<std::string, std::string> &map_ref);
+    void confirm_apikey(const std::string &response, std::unordered_map<std::string, std::string> &map_ref);
 
 public:
     Backend();

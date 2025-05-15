@@ -91,6 +91,7 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // PROGRAM STARTUP
         if (g->program_state.program_startup && !g->program_state.trigger_error && !g->file_status.watchlist_empty)
         {
             g->api_workflow.multi_watchlist_call = true;
@@ -106,6 +107,19 @@ int main()
             g->apiKeyFileEmptyWindow(window, default_font, title_font, midsize_font, default_font_italic);
         }
 
+        // WATCHLIST
+        if (!g->program_state.program_startup && !g->file_status.api_key_empty)
+        {
+            g->generate_watchlist(window, title_font);
+        }
+
+        // OPEN ERROR WINDOW
+        if (g->program_state.trigger_error)
+        {
+            g->error_window(window, midsize_font, g->popup_booleans.open_error_window = true);
+        }
+
+        // API KEY CHANGE OR SET WINDOW
         if (g->popup_booleans.open_dynamic_window && !g->program_state.trigger_error)
         {
             if (g->program_state.adding_api)
@@ -132,11 +146,7 @@ int main()
             }
         }
 
-        if (!g->program_state.program_startup && !g->file_status.api_key_empty)
-        {
-            g->generate_watchlist(window, title_font);
-        }
-
+        // OPENS ADD STOCK WINDOW
         if (g->popup_booleans.open_add_to_watchlist_window)
         {
 
@@ -150,10 +160,11 @@ int main()
             g->making_api_call_window(window, midsize_font, g->api_workflow.need_make_api);
         }
 
-        if (g->program_state.trigger_error)
-        {
-            g->error_window(window, midsize_font, g->popup_booleans.open_error_window = true);
-        }
+        // // OPEN ERROR WINDOW
+        // if (g->program_state.trigger_error)
+        // {
+        //     g->error_window(window, midsize_font, g->popup_booleans.open_error_window = true);
+        // }
 
         // OPENING STOCK FINANCIALS WINDOW
         for (const auto &pair : financial_booleans_map)
@@ -293,10 +304,6 @@ int main()
                         else if (e.getType() == BackendException::ErrorType::API_CONFIRMATION_FAILED)
                         {
                             g->api_workflow.try_again = false;
-                            g->api_workflow.need_make_api = false;
-                            g->program_state.adding_api = false;
-                            g->program_state.changing_api = false;
-                            // g->reset_necessary_guiops_booleans();
                         }
                         else
                         {

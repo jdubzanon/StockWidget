@@ -131,6 +131,7 @@ bool RequestOps::setup_multirequest_financials(const std::string &ticker, const 
 
     if (!headers)
         add_headers(key);
+
     for (const std::string &url : urls)
     {
 
@@ -301,6 +302,7 @@ bool RequestOps::perform_single_request_watchlist(const std::string &ticker, con
     CURLcode ret = curl_easy_perform(handle);
 
     curl_easy_cleanup(handle);
+    manually_delete_responses(&watchlist_map);
     return (ret == CURLE_OK);
 }
 
@@ -311,7 +313,6 @@ bool RequestOps::perform_single_request_summary(const std::string &ticker, const
     {
         return false;
     }
-    std::cout << key << std::endl;
     if (headers)
     {
         curl_slist_free_all(headers);
@@ -339,7 +340,7 @@ bool RequestOps::perform_single_request_summary(const std::string &ticker, const
     curl_easy_setopt(handle, CURLOPT_TIMEOUT, 10L);
     CURLcode ret = curl_easy_perform(handle);
     curl_easy_cleanup(handle);
-
+    manually_delete_responses(&summary_map);
     return (ret == CURLE_OK);
 }
 
@@ -378,6 +379,7 @@ void RequestOps::perform_single_request_charts(const std::string &ticker, const 
     }
     curl_easy_cleanup(handle);
     handle = nullptr;
+    manually_delete_responses(&chart_map);
 
     return;
 }

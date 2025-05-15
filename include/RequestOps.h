@@ -35,8 +35,6 @@ private:
 private:
     // must be ran for every MULTI curl call BEGIN
     void set_up_multi_handle_watchlist(const std::vector<std::string> &urls, const std::string &key);
-    void check_curl_msgs_watchlist();
-    void check_curl_msgs_financials();
     std::string get_response_type_from_url(const std::string &url);
     bool setup_multirequest_financials(const std::string &ticker, const std::string &key);
     // callbacks for request functions

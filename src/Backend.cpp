@@ -69,22 +69,15 @@ bool Backend::run_add_to_watchlist_operations(const std::string &ticker)
 
     run_single_api_call_operations(ticker_to_uppercase);
 
-    std::string &returned_json = mutable_response_map.at(ticker_to_uppercase);
-    // ############################################################
-    JsonParseOps::JSON_CODES apikey_conf_code = jsonparseops->apikey_confimed(returned_json);
-    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
-    {
-        mutable_response_map.clear();
-        // add holdings key vec clear
-        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "Did you change your API Key?\nYour key failed");
-    }
+    // INTERNET CHECK
+    if (mutable_response_map.empty())
+        throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internt?\nif so api may be down");
 
-    else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
-    {
-        mutable_response_map.clear();
-        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with the json parsing\nTry again?");
-    }
-    // #################################################################
+    std::string &returned_json = mutable_response_map.at(ticker_to_uppercase);
+
+    // API CONFIRMATION
+    confirm_apikey(returned_json, mutable_response_map);
+
     jsonparseops->clean_resonse(returned_json);
 
     JsonParseOps::JSON_CODES jsonops_code = run_internal_parsing_operations(returned_json, ticker_to_uppercase);
@@ -243,7 +236,7 @@ void Backend::run_add_api_key_operations(const std::string &api_key)
     if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
     {
         watchlist_map.clear();
-        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...");
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...\nKey was not saved");
     }
     else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
     {
@@ -251,11 +244,9 @@ void Backend::run_add_api_key_operations(const std::string &api_key)
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json Parse Failed!\nTry Again?");
     }
 
-    std::cout << static_cast<int>(apikey_conf_code) << std::endl;
     if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_CONFIRMED)
     {
         watchlist_map.clear();
-        std::cout << "here api key confirmed backend cpp" << std::endl;
         // WRITE ENCRYPTION IF THE API KEY IS CONFIRMED
         const std::unordered_map<std::string, std::vector<uint8_t>> *immut_map = encryptops->get_immutable_map();
         bool failed_to_mod_iv_file = fileops->add_key_iv_info_to_file(immut_map);
@@ -299,6 +290,50 @@ std::string Backend::run_decrypt_apikey_operations()
     build_map_from_files();
     std::string decyrpted_str = encryptops->decrypt_api_key();
     return decyrpted_str;
+}
+
+// PRIVATE FOR run_multi_watchlist_api_calls_operations()
+void Backend::confirm_apikey(const std::string &response, bool &conf_ref, std::unordered_map<std::string, std::string> &map_ref)
+{
+    JsonParseOps::JSON_CODES conf_code = jsonparseops->apikey_confimed(response);
+    if (conf_code == JsonParseOps::JSON_CODES::API_KEY_CONFIRMED)
+    {
+        conf_ref = true;
+        return;
+    }
+
+    else if (conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED || conf_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED)
+    {
+        map_ref.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json parse failed in multi watchlist\n--API Confirmation\ntry again?");
+    }
+
+    else if (conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
+    {
+        map_ref.clear();
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API Confirmation failed multi watchlist");
+    }
+
+    return;
+}
+
+// PRIVATE GENERIC APIKEY CONFIRMATION
+void Backend::confirm_apikey(const std::string &response, std::unordered_map<std::string, std::string> &map_ref)
+{
+    JsonParseOps::JSON_CODES conf_code = jsonparseops->apikey_confimed(response);
+    if (conf_code == JsonParseOps::JSON_CODES::API_KEY_CONFIRMED)
+        return;
+    else if (conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED || conf_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED)
+    {
+        map_ref.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json parse failed in multi watchlist\n--API Confirmation\ntry again?");
+    }
+
+    else if (conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
+    {
+        map_ref.clear();
+        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API Confirmation failed multi watchlist");
+    }
 }
 
 // MAKING API CALL USING API KEYS
@@ -355,7 +390,6 @@ bool Backend::run_multi_watchlist_api_calls_operations()
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
-    std::cout << "api key" << api_key << std::endl;
     // BUILDING RESPONSE MAP
     std::vector<std::string> endpoints = fileops->create_api_endpoints_from_watchlist();
     std::vector<std::string> temp_endpoints;
@@ -399,6 +433,8 @@ bool Backend::run_multi_watchlist_api_calls_operations()
         throw BackendException(BackendException::ErrorType::MULTI_API_CALL_TOTAL_FAILURE, "Bro.. \nAre you even connected to the internet?\nif you are api may be down right now");
     }
 
+    bool apikey_confimed = false;
+
     for (auto &e : endpoints)
     {
         // handles: "quoteSummary": { "result" : [ {"error" : true, "message" : "source currently unavailable"} ] }
@@ -407,6 +443,14 @@ bool Backend::run_multi_watchlist_api_calls_operations()
         if (it != watchlist_mutable_map.end())
         {
             std::string &response = watchlist_mutable_map.at(it->first);
+
+            // ONLY NEED THIS TO OCCUR ONCE
+            if (!apikey_confimed)
+            {
+                bool &apikey_conf_ref = apikey_confimed;
+                confirm_apikey(response, apikey_conf_ref, watchlist_mutable_map);
+            }
+
             jsonparseops->clean_resonse(response);
 
             JsonParseOps::JSON_CODES info_avail = jsonparseops->information_unavailable_check(response);
@@ -537,6 +581,10 @@ bool Backend::run_financials_operations(const std::string &ticker)
         earnings_json = &mutable_fin_map_ref.at("earnings");
     }
 
+    // GRAB ONE OF THE RESPONSES AND CHECK FOR APIKEY CONFIMATION
+    if (!bs_json->empty())
+        confirm_apikey(mutable_fin_map_ref.at("balance-sheet"), mutable_fin_map_ref);
+
     // TICKER NOT SUPPORTED
     for (const auto &pair : fin_map_ref)
     {
@@ -607,24 +655,14 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "summary api call failed");
 
     const std::unordered_map<std::string, std::string> &sum_map_ref = requestops->get_immutable_summary_map_ref();
+
+    if (sum_map_ref.empty())
+        throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you connected to the internet\nif so api might be down");
+
     const std::string &returned_json = sum_map_ref.at("summary");
 
-    // ##############################################
-    JsonParseOps::JSON_CODES apikey_conf_code = jsonparseops->apikey_confimed(returned_json);
-    if (apikey_conf_code == JsonParseOps::JSON_CODES::API_KEY_FAILED)
-    {
-        std::cout << "summary api key failed" << std::endl;
-        summary_map_ref.clear();
-        throw BackendException(BackendException::ErrorType::API_CONFIRMATION_FAILED, "API key failed, please check api key...");
-    }
-    else if (apikey_conf_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
-    {
-        std::cout << "summary api key failed" << std::endl;
-        summary_map_ref.clear();
-        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Json Parse Failed!\nTry Again?");
-    }
-
-    // ####################################
+    if (!sum_map_ref.empty())
+        confirm_apikey(returned_json, summary_map_ref);
 
     Metrics metric(ticker);
     Metrics &metric_ref = metric;
@@ -705,6 +743,19 @@ bool Backend::run_charting_operations(const std::string &ticker)
     chart_vec.push_back(std::move(c_info));
     lastitem = chart_vec.size() - 1;
     ChartInfo &c = (jsonparseops->get_mutable_chart_info_vec())[lastitem];
+
+    // FOR INERNET CONNECTION
+    std::unordered_map<std::string, std::string> &mutable_chart_response_map = c.get_mutable_chart_respone_map();
+    if (mutable_chart_response_map.empty())
+        throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internet?\nif so api might be down");
+
+    // CONFIRM API KEY
+    auto it = mutable_chart_response_map.find(ticker);
+    if (it != mutable_chart_response_map.end())
+    {
+        const std::string &response = mutable_chart_response_map.at(ticker);
+        confirm_apikey(response, mutable_chart_response_map);
+    }
 
     if (!jsonparseops->parse_chart_response(ticker, c))
     {
