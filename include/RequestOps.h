@@ -31,12 +31,15 @@ private:
     std::unordered_map<std::string, std::string> watchlist_map;
     std::unordered_map<std::string, std::string> financial_map;
     std::unordered_map<std::string, std::string> summary_map;
+    std::unordered_map<std::string, std::string> holdings_map;
 
 private:
     // must be ran for every MULTI curl call BEGIN
     void set_up_multi_handle_watchlist(const std::vector<std::string> &urls, const std::string &key);
     std::string get_response_type_from_url(const std::string &url);
     bool setup_multirequest_financials(const std::string &ticker, const std::string &key);
+    bool setup_multi_request_holdings(const std::string &ticker, const std::string &key);
+
     // callbacks for request functions
     static size_t chartWriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
@@ -49,6 +52,7 @@ public:
 
     bool perform_multirequest_watchlist(const std::vector<std::string> &urls, std::string &key);
     bool perform_multirequest_financials(const std::string &ticker, const std::string &key);
+    bool perform_multi_request_holdings(const std::string &ticker, const std::string &key);
     void multicurl_cleanup();
 
     // call this for jsoncpp processing GETTERS

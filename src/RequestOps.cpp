@@ -170,6 +170,62 @@ bool RequestOps::setup_multirequest_financials(const std::string &ticker, const 
     return true;
 }
 
+bool RequestOps::setup_multi_request_holdings(const std::string &ticker, const std::string &key)
+{
+    if (!holdings_map.empty())
+    {
+        holdings_map.clear();
+    }
+
+    std::string holdings_url_head = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-top-holdings?symbol=";
+    std::string holdings_url_foot = "&region=US&lang=en-US";
+    std::string holdings_url_concat = holdings_url_head + ticker + holdings_url_foot;
+
+    std::string profile_url = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-profile?region=US&lang=en-US&symbol=" + ticker;
+
+    std::string urls[2] = {holdings_url_concat, profile_url};
+
+    if (!multi_handle)
+    {
+        multi_handle = curl_multi_init();
+    }
+    if (!headers)
+    {
+        add_headers(key);
+    }
+
+    for (const std::string &url : urls)
+    {
+        CURL *easy_handle = curl_easy_init();
+        if (!easy_handle)
+        {
+            continue;
+        }
+
+        curl_easy_setopt(easy_handle, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(easy_handle, CURLOPT_TIMEOUT, 10L);
+
+        std::string response_type = get_response_type_from_url(url);
+
+        if (!response_type.empty())
+        {
+            holdings_map[response_type] = "";
+            curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &holdings_map[response_type]);
+            curl_multi_add_handle(multi_handle, easy_handle);
+        }
+        else
+        {
+            std::cout << "get response type failed" << std::endl;
+            return false;
+        }
+
+    } // end for loops of urls
+    return true;
+}
+
 bool RequestOps::perform_multirequest_watchlist(const std::vector<std::string> &urls, std::string &key)
 {
 
@@ -222,6 +278,33 @@ bool RequestOps::perform_multirequest_financials(const std::string &ticker, cons
 
     } while (still_running);
     manually_delete_responses(&financial_map);
+    return true;
+}
+
+bool RequestOps::perform_multi_request_holdings(const std::string &ticker, const std::string &key)
+{
+    if (!setup_multi_request_holdings(ticker, key))
+        return false;
+
+    int still_running = 0;
+    do
+    {
+        CURLMcode mc = curl_multi_perform(multi_handle, &still_running);
+        if (mc != CURLM_OK)
+        {
+            return false;
+        }
+
+        int numfds = 0;
+        mc = curl_multi_wait(multi_handle, nullptr, 0, 1000, &numfds);
+        if (mc != CURLM_OK)
+        {
+            return false;
+        }
+
+    } while (still_running);
+    manually_delete_responses(&holdings_map);
+
     return true;
 }
 
