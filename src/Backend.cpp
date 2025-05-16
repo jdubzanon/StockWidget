@@ -789,6 +789,70 @@ bool Backend::run_charting_operations(const std::string &ticker)
 }
 
 // PUBLIC
+void Backend::run_etf_holdings_operations(const std::string &ticker)
+{
+    // REQUEST OPS MAP OPERATIONS START
+    std::unordered_map<std::string, std::string> &map = requestops->get_holdings_map();
+    // CLEAR MAP BEFORE POPULATING
+    if (!map.empty())
+        map.clear();
+
+    // PUT THIS IN A FUNCTION REFRACTOR CODE
+    encryptops->clear_map();
+    std::string api_key = "";
+    api_key = run_decrypt_apikey_operations();
+    encryptops->clear_map();
+
+    // THIS POPULATES MAP AND MANUALLY DELETES THINGS IF RETURN WAS BAD
+    if (!requestops->perform_multi_request_holdings(ticker, api_key))
+        throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "API call failed, Try again?");
+
+    // CHECK IF EMPTY FROM MANUAL DELETE FUNCTION IN REQUEST OPS. IF ITS EMPTY NO RESPONSES WERE RECIEVED
+    if (map.empty())
+        throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internet?\nif so API may be down");
+
+    const std::string &top_holdings_json = map.at("top-holdings");
+    confirm_apikey(top_holdings_json, map);
+    // REQUEST OPS MAP OPERATIONS END
+
+    // ETF_HOLDINGS OBJECT MAP STARTS
+    ETF_Holdings eh(ticker);
+    ETF_Holdings &eh_ref = eh;
+
+    JsonParseOps::JSON_CODES holdings_parse_code = jsonparseops->parse_etf_response_topholdings(top_holdings_json, eh_ref);
+    if (holdings_parse_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED || holdings_parse_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED)
+    {
+        map.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with holdings\nTry again?");
+    }
+
+    const std::string &profile_json = map.at("profile");
+
+    JsonParseOps::JSON_CODES profile_parse_code = jsonparseops->parse_etf_response_profile(profile_json, eh_ref);
+    if (profile_parse_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED || holdings_parse_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED)
+    {
+        map.clear();
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with parsing profile\nTry again?");
+    }
+    std::vector<ETF_Holdings> *holdings_vec = jsonparseops->get_etf_holdings_vec_ptr();
+    holdings_vec->push_back(std::move(eh));
+
+    // TESTING
+    int last_itm = static_cast<int>(holdings_vec->size()) - 1;
+    ETF_Holdings &etf = holdings_vec->at(last_itm);
+    std::unordered_map<std::string, std::string> &comp = etf.get_holdings_company_name();
+    std::unordered_map<std::string, float> &percent = etf.get_holdings_float();
+    std::vector<std::string> &keys = etf.get_holidings_keys();
+
+    for (const auto &i : keys)
+    {
+        std::cout << i << " " << comp.at(i) << " " << percent.at(i) << std::endl;
+    }
+
+    return;
+}
+
+// PUBLIC
 bool Backend::summary_already_generated(const std::string &ticker)
 {
     const std::vector<Metrics> &immut_met_vec = jsonparseops->get_immutable_metrics_vec();
@@ -832,6 +896,17 @@ int Backend::get_chart_obj_position_in_vec(const std::string &ticker)
 
     return -1;
 };
+
+// PUBLIC
+int Backend::get_holdings_position_in_vec(const std::string &ticker)
+{
+    const std::vector<ETF_Holdings> *holdings_vec = jsonparseops->get_etf_holdings_vec_ptr();
+    auto it = std::find_if(holdings_vec->begin(), holdings_vec->end(), [ticker](const ETF_Holdings &e)
+                           { return e.get_ticker() == ticker; });
+    if (it == holdings_vec->end())
+        return -1;
+    return std::distance(holdings_vec->begin(), it);
+}
 
 // PRIVATE
 JsonParseOps::JSON_CODES Backend::run_internal_parsing_operations(const std::string &response, const std::string &ticker_copy)
@@ -897,6 +972,11 @@ std::vector<Metrics> *Backend::pass_metrics_ptr()
 std::vector<ChartInfo> *Backend::pass_chart_info_vec_ptr()
 {
     return jsonparseops->get_chart_info_vec_ptr();
+}
+
+std::vector<ETF_Holdings> *Backend::pass_etf_holdings_vec_ptr()
+{
+    return jsonparseops->get_etf_holdings_vec_ptr();
 }
 
 // PRIVATE

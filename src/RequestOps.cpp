@@ -515,6 +515,11 @@ std::unordered_map<std::string, std::string> &RequestOps::get_mutable_summary_ma
     return summary_map;
 }
 
+std::unordered_map<std::string, std::string> &RequestOps::get_holdings_map()
+{
+    return holdings_map;
+}
+
 void RequestOps::manually_delete_responses(std::unordered_map<std::string, std::string> *map)
 {
     for (auto it = map->begin(); it != map->end();)

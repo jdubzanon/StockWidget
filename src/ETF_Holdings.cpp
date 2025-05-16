@@ -5,7 +5,7 @@ ETF_Holdings::ETF_Holdings(const std::string &t)
 {
 }
 
-const std::string &ETF_Holdings::get_ticker()
+const std::string &ETF_Holdings::get_ticker() const
 {
     return ticker;
 }
@@ -23,4 +23,9 @@ std::unordered_map<std::string, std::string> &ETF_Holdings::get_holdings_company
 std::vector<std::string> &ETF_Holdings::get_holidings_keys()
 {
     return holdings_keys;
+}
+
+std::unordered_map<std::string, std::string> &ETF_Holdings::get_profile_map()
+{
+    return profile_map;
 }

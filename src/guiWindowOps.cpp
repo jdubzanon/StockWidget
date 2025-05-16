@@ -10,6 +10,7 @@ guiWindowOps::guiWindowOps()
     financial_vec = backendops->pass_stock_financial_vec_ptr_non_const();
     metrics_vec = backendops->pass_metrics_ptr();
     chart_info_vec = backendops->pass_chart_info_vec_ptr();
+    etf_holdings_vec = backendops->pass_etf_holdings_vec_ptr();
     file_status.api_key_empty = backendops->get_api_file_status();
     file_status.watchlist_empty = backendops->get_watchlist_file_status();
 }
@@ -161,7 +162,7 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
 void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
 {
     // DROPBOX CODE BELOW
-    const char *action_items[] = {"Chart", "Delete"};
+    const char *action_items[] = {"Chart", "Holdings", "Delete"};
     static int selected_action = -1;
     std::string dropbox_label = stock.get_ticker() + "\n" + "Actions";
     const char *preview_value = (selected_action == -1) ? "Select Action" : action_items[selected_action];
@@ -193,7 +194,14 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
             chart_booleans.at(stock.get_ticker()) = true;
         }
     }
+
     else if (selected_action == 1)
+    {
+        api_workflow.need_make_api = true;
+        api_workflow.multi_etf_holdings_call = true;
+        program_state.dropbox_etf_holdings_clicked = true;
+    }
+    else if (selected_action == 2)
     {
         try
         {
@@ -713,7 +721,7 @@ void guiWindowOps::delete_from_boolean_map(std::unordered_map<std::string, bool>
 }
 
 // PUBLIC
-void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool mulit_financial_call, bool multi_watchlist_call, bool summary_call, bool chart_call, const char *ticker)
+void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool mulit_financial_call, bool multi_watchlist_call, bool multi_etf_holdings_call, bool summary_call, bool chart_call, const char *ticker)
 {
 
     if (single_call)
@@ -751,6 +759,10 @@ void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiK
         else if (mulit_financial_call)
         {
             backendops->run_financials_operations(ticker);
+        }
+        else if (multi_etf_holdings_call)
+        {
+            backendops->run_etf_holdings_operations(ticker);
         }
     }
 }
@@ -1307,11 +1319,13 @@ void guiWindowOps::reset_necessary_guiops_booleans()
     api_workflow.summary_call = false;
     api_workflow.chart_call = false;
     api_workflow.api_key_entry_call = false;
+    api_workflow.multi_etf_holdings_call = false;
     program_state.adding_api = false;
     program_state.changing_api = false;
     program_state.program_startup = false;
     program_state.refresh_watchlist = false;
     program_state.dropbox_financial_clicked = false;
+    program_state.dropbox_etf_holdings_clicked = false;
     program_state.trigger_error = false;
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;

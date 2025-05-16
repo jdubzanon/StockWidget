@@ -900,6 +900,119 @@ bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c)
     return true;
 }
 
+JsonParseOps::JSON_CODES JsonParseOps::parse_etf_response_topholdings(const std::string &returned_json, ETF_Holdings &eh)
+{
+    std::cout << "parse started" << std::endl;
+    Json::CharReaderBuilder reader;
+    Json::Value jsonData;
+    std::string errs;
+
+    std::istringstream stream(returned_json);
+    if (!Json::parseFromStream(reader, stream, &jsonData, &errs))
+
+    {
+        return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
+    }
+
+    if (jsonData.isNull() || jsonData.empty())
+    {
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+    }
+
+    const Json::Value &topholdings = jsonData["topHoldings"];
+
+    if (topholdings.isNull() || topholdings.empty())
+    {
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+    }
+
+    const Json::Value &holdings = topholdings["holdings"];
+
+    if (holdings.isNull() || !holdings.isArray())
+    {
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+    }
+
+    if (holdings.isArray() && holdings.empty())
+        return JsonParseOps::JSON_CODES::JSON_PARSE_SUCCESS;
+
+    if (holdings.isArray() && !holdings.empty())
+    {
+
+        std::unordered_map<std::string, float> &holdings_float_map = eh.get_holdings_float();
+        std::unordered_map<std::string, std::string> &holdings_string_map = eh.get_holdings_company_name();
+        std::vector<std::string> &holding_keys = eh.get_holidings_keys();
+
+        for (Json::Value::const_iterator itr = holdings.begin(); itr != holdings.end(); ++itr)
+        {
+
+            std::string temp_symbol_var;
+            float temp_holding_percent;
+            std::string temp_name_val;
+
+            Json::Value symbol = (*itr)["symbol"];
+            if (symbol.isNull())
+                continue;
+            else
+                temp_symbol_var = symbol.asString();
+
+            Json::Value company_name = (*itr)["holdingName"];
+            if (company_name.isNull())
+                temp_name_val = "N/A";
+            else
+                temp_name_val = company_name.asString();
+
+            Json::Value holding_percent = (*itr)["holdingPercent"];
+            if (holding_percent.isNull())
+                temp_holding_percent = 0.00;
+            else
+                temp_holding_percent = (holding_percent.asFloat() * 100);
+
+            holdings_float_map[temp_symbol_var] = temp_holding_percent; // HOLDS PERCENT HOLDING
+            holdings_string_map[temp_symbol_var] = temp_name_val;       // HOLDS COMPANY NAME
+            holding_keys.push_back(std::move(temp_symbol_var));         // KEYS IN ORDER USED TO ACCESS BOTH MAPS
+        }
+        return JsonParseOps::JSON_CODES::JSON_PARSE_SUCCESS;
+    }
+
+    return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+}
+
+JsonParseOps::JSON_CODES JsonParseOps::parse_etf_response_profile(const std::string &returned_json, ETF_Holdings &eh)
+{
+    Json::CharReaderBuilder reader;
+    Json::Value jsonData;
+    std::string errs;
+
+    std::istringstream stream(returned_json);
+    if (!Json::parseFromStream(reader, stream, &jsonData, &errs))
+        return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
+    if (jsonData.isNull() || jsonData.empty())
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+
+    const Json::Value &summary_profile = jsonData["summaryProfile"];
+    if (summary_profile.isNull() || summary_profile.empty())
+        return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
+
+    std::unordered_map<std::string, std::string> &profile_map = eh.get_profile_map();
+
+    const Json::Value &business_summary = summary_profile["longBusinessSummary"];
+
+    if (business_summary.isNull() || business_summary.empty())
+        profile_map["profile"] = "Profile Unavailable";
+    else
+        profile_map["profile"] = clean_text(business_summary.asString()); // GETS RID OF -null- in text
+    // MUST USE IMGUI::TEXTWRAPPED TO GET THIS TO WRAP PROPERLY
+    return JsonParseOps::JSON_CODES::JSON_PARSE_SUCCESS;
+}
+
+std::string JsonParseOps::clean_text(const std::string &text)
+{
+    std::regex pattern(R"(\s*-null-\s*?.\s*)");
+    std::string cleaned_string = std::regex_replace(text, pattern, " ");
+    return cleaned_string;
+}
+
 std::vector<StockFinancials> *JsonParseOps::get_financial_vec_ptr_non_const()
 {
     return &stock_financials_bucket;
@@ -937,4 +1050,9 @@ std::vector<ChartInfo> &JsonParseOps::get_mutable_chart_info_vec()
 std::vector<ChartInfo> *JsonParseOps::get_chart_info_vec_ptr()
 {
     return &chart_info_vec;
+}
+
+std::vector<ETF_Holdings> *JsonParseOps::get_etf_holdings_vec_ptr()
+{
+    return &etf_holdings_vec;
 }

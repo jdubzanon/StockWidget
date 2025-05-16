@@ -5,6 +5,7 @@
 #include "StockFinancials.h"
 #include "Metrics.h"
 #include "ChartInfo.h"
+#include "ETF_Holdings.h"
 #include "utils.h"
 #include <vector>
 #include <iostream>
@@ -22,9 +23,11 @@ private:
     std::vector<StockFinancials> stock_financials_bucket;
     std::vector<Metrics> stock_metrics_vec;
     std::vector<ChartInfo> chart_info_vec;
+    std::vector<ETF_Holdings> etf_holdings_vec;
 
 private:
     bool in_stock_information_vec(const std::string &ticker);
+    std::string clean_text(const std::string &text);
 
     struct sortMethod
     {
@@ -43,7 +46,8 @@ public:
         ALREADY_IN_INFO_VEC,
         PUSHED_TO_INFO_VEC,
         API_KEY_FAILED,
-        API_KEY_CONFIRMED
+        API_KEY_CONFIRMED,
+        JSON_PARSE_SUCCESS
 
     };
 
@@ -84,6 +88,10 @@ public:
     const std::vector<ChartInfo> &get_immutable_chart_info_vec() const;
     std::vector<ChartInfo> &get_mutable_chart_info_vec();
     std::vector<ChartInfo> *get_chart_info_vec_ptr();
+    // HOLDINGS AND PROFILE
+    JSON_CODES parse_etf_response_topholdings(const std::string &returned_json, ETF_Holdings &eh);
+    JSON_CODES parse_etf_response_profile(const std::string &returned_json, ETF_Holdings &eh);
+    std::vector<ETF_Holdings> *get_etf_holdings_vec_ptr();
 };
 
 #endif

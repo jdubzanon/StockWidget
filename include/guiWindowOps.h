@@ -17,6 +17,7 @@ private:
     std::vector<StockFinancials> *financial_vec;
     std::vector<Metrics> *metrics_vec;
     std::vector<ChartInfo> *chart_info_vec;
+    std::vector<ETF_Holdings> *etf_holdings_vec;
     char input_bucket[100];
 
 private:
@@ -79,6 +80,7 @@ public:
         // Multi calls
         bool multi_watchlist_call = false;
         bool multi_financial_call = false;
+        bool multi_etf_holdings_call = false;
         bool try_again = false;
         std::string ticker = "none";
     } api_workflow;
@@ -92,13 +94,14 @@ public:
         bool changing_api = false;
         bool dropbox_financial_clicked = false;
         bool dropbox_chart_clicked = false;
+        bool dropbox_etf_holdings_clicked = false;
     } program_state;
 
 public:
     guiWindowOps();
     ~guiWindowOps();
     // ACTIONS
-    void make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool multi_financial_call, bool multi_watchlist_call, bool summary_call, bool chart_call, const char *ticker);
+    void make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool multi_financial_call, bool multi_watchlist_call, bool multi_etf_holding_call, bool summary_call, bool chart_call, const char *ticker);
     void delete_from_boolean_map(std::unordered_map<std::string, bool> &map, const std::string &s);
     void setup_window_boolean_maps();
     void reset_necessary_guiops_booleans();

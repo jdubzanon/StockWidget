@@ -50,8 +50,7 @@ public:
     bool run_financials_operations(const std::string &ticker);
     bool run_generate_summary_operations(const std::string &ticker);
     bool run_charting_operations(const std::string &ticker);
-    const std::vector<StockInfo> &get_stockinfo_vec();
-
+    void run_etf_holdings_operations(const std::string &ticker);
     bool financial_report_already_generated(const std::string &ticker);
     bool chart_already_generated(const std::string &ticker);
     bool summary_already_generated(const std::string &ticker);
@@ -64,5 +63,8 @@ public:
     std::vector<Metrics> *pass_metrics_ptr();
     std::vector<ChartInfo> *pass_chart_info_vec_ptr();
     std::vector<StockInfo> *pass_stockinfo_ptr();
+    std::vector<ETF_Holdings> *pass_etf_holdings_vec_ptr();
+    const std::vector<StockInfo> &get_stockinfo_vec();
+    int get_holdings_position_in_vec(const std::string &ticker);
 };
 #endif

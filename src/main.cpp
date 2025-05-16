@@ -160,13 +160,7 @@ int main()
             g->making_api_call_window(window, midsize_font, g->api_workflow.need_make_api);
         }
 
-        // // OPEN ERROR WINDOW
-        // if (g->program_state.trigger_error)
-        // {
-        //     g->error_window(window, midsize_font, g->popup_booleans.open_error_window = true);
-        // }
-
-        // OPENING STOCK FINANCIALS WINDOW
+                // OPENING STOCK FINANCIALS WINDOW
         for (const auto &pair : financial_booleans_map)
         {
             if (pair.second)
@@ -224,6 +218,7 @@ int main()
                                      g->api_workflow.api_key_entry_call = false,
                                      g->api_workflow.multi_financial_call,
                                      g->api_workflow.multi_watchlist_call,
+                                     g->api_workflow.multi_etf_holdings_call,
                                      g->api_workflow.summary_call = false,
                                      g->api_workflow.chart_call = false,
                                      g->api_workflow.ticker.c_str());
@@ -263,6 +258,7 @@ int main()
                                      g->api_workflow.api_key_entry_call,
                                      g->api_workflow.multi_financial_call = false,
                                      g->api_workflow.multi_watchlist_call = false,
+                                     g->api_workflow.multi_etf_holdings_call = false,
                                      g->api_workflow.summary_call,
                                      g->api_workflow.chart_call,
                                      g->api_workflow.ticker.c_str());

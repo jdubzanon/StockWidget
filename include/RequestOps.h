@@ -62,7 +62,7 @@ public:
     std::unordered_map<std::string, std::string> &get_mutable_financial_map_ref();
     const std::unordered_map<std::string, std::string> &get_immutable_summary_map_ref();
     std::unordered_map<std::string, std::string> &get_mutable_summary_map_ref();
-
+    std::unordered_map<std::string, std::string> &get_holdings_map();
     std::string get_ticker_from_url(const std::string &url);
     std::unordered_map<CURL *, std::string> &get_handle_to_ticker();
 
