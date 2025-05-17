@@ -197,11 +197,16 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
 
     else if (selected_action == 1)
     {
-        api_workflow.need_make_api = true;
-        program_state.dropbox_etf_holdings_clicked = true;
-        api_workflow.multi_etf_holdings_call = true;
-        api_workflow.ticker = stock.get_ticker();
-        etf_holdings_booleans.at(stock.get_ticker()) = true;
+        if (!backendops->etf_holdings_already_generated(stock.get_ticker()))
+        {
+            api_workflow.need_make_api = true;
+            program_state.dropbox_etf_holdings_clicked = true;
+            api_workflow.multi_etf_holdings_call = true;
+            api_workflow.ticker = stock.get_ticker();
+            etf_holdings_booleans.at(stock.get_ticker()) = true;
+        }
+        else
+            etf_holdings_booleans.at(stock.get_ticker()) = true;
     }
     else if (selected_action == 2)
     {
@@ -1276,7 +1281,7 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     bool &open_ref = etf_holdings_booleans.at(ticker);
 
     std::ostringstream oss;
-    oss << ticker << " Chart";
+    oss << ticker << " Holdings";
     std::string windowid = oss.str();
 
     int glfw_width, glfw_height;
@@ -1287,9 +1292,52 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     ImGui::GetStyle().WindowRounding = 10.0f;
     ImGui::GetStyle().FrameRounding = 10.0f;
 
-    ImGui::Begin(ticker.c_str(), &open_ref);
-    ImGui::Text("THIS IS A WINDOW");
+    const std::unordered_map<std::string, float> &percent_map = etf_ref.get_holdings_float();
+    const std::unordered_map<std::string, std::string> &company_name_map = etf_ref.get_holdings_company_name();
+    const std::vector<std::string> &keys = etf_ref.get_holidings_keys();
+
+    ImGui::Begin(ticker.c_str(), &open_ref, ImGuiWindowFlags_NoCollapse);
+    ImVec2 window_size = ImGui::GetWindowSize();
+    ImGui::PushFont(font_change);
+    ImGui::Text("Top Holdings");
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(window_size.x * 0.6f);
+    ImGui::Text("Sector Weights");
+    ImGui::PopFont();
+
+    ImGui::BeginTable(windowid.c_str(), 2, ImGuiTableFlags_BordersOuter, ImVec2(window_size.x * 0.5f, window_size.y * 0.5f));
+    ImGui::TableNextRow();
+    ImGui::TableHeadersRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Text("name");
+    ImGui::TableSetColumnIndex(1);
+    ImGui::Text("Holdings percent");
+    ImGui::TableNextRow();
+    for (auto it = keys.begin(); it != keys.end(); it++)
+    {
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("%s", company_name_map.at(*it).c_str());
+        ImGui::TableSetColumnIndex(1);
+        ImVec2 cursor_pos = ImGui::GetCursorPos();
+        ImGui::SetCursorPosX(cursor_pos.x + 35);
+        ImGui::Text("%.2f", percent_map.at(*it));
+        ImGui::TableNextRow();
+    }
+    if (etf_ref.get_other_holdings() > 0)
+    {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Other");
+        ImGui::TableSetColumnIndex(1);
+        ImVec2 cursor_pos = ImGui::GetCursorPos();
+        ImGui::SetCursorPosX(cursor_pos.x + 35);
+        ImGui::Text("%.2f", etf_ref.get_other_holdings());
+    }
+    ImGui::EndTable();
+    ImGui::SameLine();
+    // genterate pie chart here
     ImGui::End();
+    return true;
 }
 
 // PUBLIC

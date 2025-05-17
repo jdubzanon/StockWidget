@@ -884,7 +884,20 @@ bool Backend::summary_already_generated(const std::string &ticker)
 }
 
 // PUBLIC
-size_t Backend::get_metrics_position_in_vec(const std::string &ticker)
+bool Backend::etf_holdings_already_generated(const std::string &ticker)
+{
+    const std::vector<ETF_Holdings> *holding_vec = jsonparseops->get_etf_holdings_vec_ptr();
+    for (const auto &obj : *holding_vec)
+    {
+        if (obj.get_ticker() == ticker)
+            return true;
+    }
+    return false;
+}
+
+// PUBLIC
+size_t
+Backend::get_metrics_position_in_vec(const std::string &ticker)
 {
 
     const std::vector<Metrics> &immut_met_vec = jsonparseops->get_immutable_metrics_vec();

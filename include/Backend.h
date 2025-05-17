@@ -54,6 +54,7 @@ public:
     bool financial_report_already_generated(const std::string &ticker);
     bool chart_already_generated(const std::string &ticker);
     bool summary_already_generated(const std::string &ticker);
+    bool etf_holdings_already_generated(const std::string &ticker);
     int find_column(const std::string &date, StockFinancials::BalanceSheetItems *ptr);
     int find_column(const std::string &date, StockFinancials::CashflowItems *ptr);
     size_t get_metrics_position_in_vec(const std::string &ticker);
