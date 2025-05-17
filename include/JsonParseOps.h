@@ -91,6 +91,7 @@ public:
     // HOLDINGS AND PROFILE
     JSON_CODES parse_etf_response_topholdings(const std::string &returned_json, ETF_Holdings &eh);
     JSON_CODES parse_etf_response_profile(const std::string &returned_json, ETF_Holdings &eh);
+    JSON_CODES parse_etf_sector_weightings(const std::string &retruned_json, ETF_Holdings &eh);
     std::vector<ETF_Holdings> *get_etf_holdings_vec_ptr();
 };
 

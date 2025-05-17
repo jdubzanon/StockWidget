@@ -198,8 +198,10 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
     else if (selected_action == 1)
     {
         api_workflow.need_make_api = true;
-        api_workflow.multi_etf_holdings_call = true;
         program_state.dropbox_etf_holdings_clicked = true;
+        api_workflow.multi_etf_holdings_call = true;
+        api_workflow.ticker = stock.get_ticker();
+        etf_holdings_booleans.at(stock.get_ticker()) = true;
     }
     else if (selected_action == 2)
     {
@@ -710,6 +712,12 @@ std::unordered_map<std::string, bool> &guiWindowOps::get_selectable_booleans()
     return selectable_booleans;
 };
 
+// PUBLIC
+std::unordered_map<std::string, bool> &guiWindowOps::get_etf_holdings_booleans()
+{
+    return etf_holdings_booleans;
+}
+
 // #################ACTIONS######################3########
 
 void guiWindowOps::delete_from_boolean_map(std::unordered_map<std::string, bool> &map, const std::string &s)
@@ -1024,7 +1032,7 @@ bool guiWindowOps::generate_stockfinancials_window(GLFWwindow *window, const std
     ImVec2 fin_win_pos = ImVec2(bigWindowSize.x * 0.75f, windowYpos);
     ImGui::SetNextWindowPos(fin_win_pos, ImGuiCond_Once);
     ImGui::GetStyle().WindowRounding = 10.0f;
-    ImGui::GetStyle().FrameRounding = 10.0f; // This rounds all buttons globally (set a value > 0)
+    ImGui::GetStyle().FrameRounding = 10.0f;
     windowYpos += 1.0;
     if (windowYpos > bigWindowSize.y * 0.90)
     {
@@ -1202,6 +1210,7 @@ void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_chan
         financials_window_booleans.insert_or_assign(uppercase_copy, false);
         selectable_booleans.insert_or_assign(uppercase_copy, false);
         chart_booleans.insert_or_assign(uppercase_copy, false);
+        etf_holdings_booleans.insert_or_assign(uppercase_copy, false);
         reset_arr();
     }
     ImGui::End();
@@ -1258,6 +1267,32 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
 }
 
 // PUBLIC
+bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::string &ticker, ImFont *font_change)
+{
+    int pos = backendops->get_holdings_position_in_vec(ticker);
+    if (pos == -1)
+        return false;
+    ETF_Holdings &etf_ref = etf_holdings_vec->at(pos);
+    bool &open_ref = etf_holdings_booleans.at(ticker);
+
+    std::ostringstream oss;
+    oss << ticker << " Chart";
+    std::string windowid = oss.str();
+
+    int glfw_width, glfw_height;
+    glfwGetWindowSize(window, &glfw_width, &glfw_height);
+    ImVec2 bigWindowSize = ImVec2(glfw_width, glfw_height);
+    ImGui::SetNextWindowSize(ImVec2(bigWindowSize.x * 0.85, bigWindowSize.y * 0.85), ImGuiCond_FirstUseEver);
+
+    ImGui::GetStyle().WindowRounding = 10.0f;
+    ImGui::GetStyle().FrameRounding = 10.0f;
+
+    ImGui::Begin(ticker.c_str(), &open_ref);
+    ImGui::Text("THIS IS A WINDOW");
+    ImGui::End();
+}
+
+// PUBLIC
 void guiWindowOps::error_window(GLFWwindow *window, ImFont *font_change, bool &open)
 {
     set_window_parameters(window, font_change);
@@ -1301,6 +1336,7 @@ void guiWindowOps::setup_window_boolean_maps()
 {
     for (const auto &watchlist_item : *watchlist_vec)
     {
+        etf_holdings_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
         chart_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
         selectable_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
         financials_window_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
@@ -1310,26 +1346,28 @@ void guiWindowOps::setup_window_boolean_maps()
 // PUBLIC
 void guiWindowOps::reset_necessary_guiops_booleans()
 {
-    popup_booleans.making_api_call_window = false;
 
     api_workflow.need_make_api = false;
-
     api_workflow.multi_financial_call = false;
+    api_workflow.multi_watchlist_call = false;
     api_workflow.try_again = false;
     api_workflow.summary_call = false;
     api_workflow.chart_call = false;
     api_workflow.api_key_entry_call = false;
     api_workflow.multi_etf_holdings_call = false;
+
     program_state.adding_api = false;
     program_state.changing_api = false;
     program_state.program_startup = false;
     program_state.refresh_watchlist = false;
     program_state.dropbox_financial_clicked = false;
     program_state.dropbox_etf_holdings_clicked = false;
+    program_state.dropbox_chart_clicked = false;
     program_state.trigger_error = false;
+
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;
-    program_state.trigger_error = false;
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;
+    popup_booleans.making_api_call_window = false;
 }

@@ -13,6 +13,7 @@ private:
     std::unordered_map<std::string, bool> financials_window_booleans;
     std::unordered_map<std::string, bool> selectable_booleans;
     std::unordered_map<std::string, bool> chart_booleans;
+    std::unordered_map<std::string, bool> etf_holdings_booleans;
     std::vector<StockInfo> *watchlist_vec;
     std::vector<StockFinancials> *financial_vec;
     std::vector<Metrics> *metrics_vec;
@@ -114,6 +115,7 @@ public:
     std::unordered_map<std::string, bool> &get_selectable_booleans();
     std::unordered_map<std::string, bool> &get_chart_booleans();
     const std::unordered_map<std::string, bool> &get_immutable_chart_booleans_map();
+    std::unordered_map<std::string, bool> &get_etf_holdings_booleans();
 
     // WINDOWS
     void generate_watchlist(GLFWwindow *window, ImFont *large_font);
@@ -122,6 +124,7 @@ public:
     void making_api_call_window(GLFWwindow *window, ImFont *midsize_f, bool make_api_call);
     void Dynamic_apikey_operation_window(GLFWwindow *window, const std::string &text, const std::string &button_label, ImFont *font_change, bool &open);
     bool display_chart_window(const std::string &ticker);
+    bool generate_etf_holdings_window(GLFWwindow *window, const std::string &ticker, ImFont *font_change);
     void add_to_watchlist_window(GLFWwindow *window, ImFont *font_change, bool &open);
     void error_window(GLFWwindow *window, ImFont *font_change, bool &open);
 };

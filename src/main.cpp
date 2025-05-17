@@ -28,6 +28,7 @@ int main()
 
     const std::unordered_map<std::string, bool> &financial_booleans_map = g->get_immutable_fin_bool_map_ref();
     const std::unordered_map<std::string, bool> &chart_booleans_map = g->get_immutable_chart_booleans_map();
+    const std::unordered_map<std::string, bool> &etf_window_booleans = g->get_etf_holdings_booleans();
 
     // IMGUI CODE BEGINS
     glfwSetErrorCallback(glfw_error_callback);
@@ -160,7 +161,7 @@ int main()
             g->making_api_call_window(window, midsize_font, g->api_workflow.need_make_api);
         }
 
-                // OPENING STOCK FINANCIALS WINDOW
+        // OPENING STOCK FINANCIALS WINDOW
         for (const auto &pair : financial_booleans_map)
         {
             if (pair.second)
@@ -184,6 +185,15 @@ int main()
             }
         }
 
+        for (const auto &pair : etf_window_booleans)
+        {
+            if (pair.second)
+            {
+                if (g->generate_etf_holdings_window(window, pair.first, midsize_font))
+                    ;
+            }
+        }
+
         g->run_chart_vec_manager();
 
         // Rendering
@@ -202,9 +212,11 @@ int main()
         {
 
             // MULTI API CALL SECTION
-            if (g->program_state.program_startup || g->program_state.refresh_watchlist || g->program_state.dropbox_financial_clicked)
+            if (g->program_state.program_startup ||
+                g->program_state.refresh_watchlist ||
+                g->program_state.dropbox_financial_clicked ||
+                g->program_state.dropbox_etf_holdings_clicked)
             {
-
                 g->api_workflow.try_again = true;
 
                 if (g->program_state.program_startup || g->program_state.refresh_watchlist)

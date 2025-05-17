@@ -791,7 +791,7 @@ bool Backend::run_charting_operations(const std::string &ticker)
 // PUBLIC
 void Backend::run_etf_holdings_operations(const std::string &ticker)
 {
-    // REQUEST OPS MAP OPERATIONS START
+    // REQUEST OPS MAP OPERATIONS
     std::unordered_map<std::string, std::string> &map = requestops->get_holdings_map();
     // CLEAR MAP BEFORE POPULATING
     if (!map.empty())
@@ -812,10 +812,10 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internet?\nif so API may be down");
 
     const std::string &top_holdings_json = map.at("top-holdings");
+    // std::cout << top_holdings_json << std::endl; // PRINT STATEMENT
     confirm_apikey(top_holdings_json, map);
-    // REQUEST OPS MAP OPERATIONS END
 
-    // ETF_HOLDINGS OBJECT MAP STARTS
+    // ETF_HOLDINGS OBJECT MAP OPERATIONS
     ETF_Holdings eh(ticker);
     ETF_Holdings &eh_ref = eh;
 
@@ -826,28 +826,45 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with holdings\nTry again?");
     }
 
-    const std::string &profile_json = map.at("profile");
+    // ########################WORKING HERE RIGHT NOW&&&&&&&&&&&&&&&&&&&^^^^^^^^^^^^^^^^$$$$$$$$$$$$
+    JsonParseOps::JSON_CODES sector_json_code = jsonparseops->parse_etf_sector_weightings(top_holdings_json, eh_ref);
+    if (sector_json_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED || sector_json_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
+        throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "sector json parse failure\ntry again?");
 
+    const std::string &profile_json = map.at("profile");
     JsonParseOps::JSON_CODES profile_parse_code = jsonparseops->parse_etf_response_profile(profile_json, eh_ref);
     if (profile_parse_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED || holdings_parse_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED)
     {
         map.clear();
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with parsing profile\nTry again?");
     }
+
+    // // SETTING OTHER HOLDINGS VALUE AND OTHER INDUSTRY WEIGHT VALUE
+    const std::unordered_map<std::string, float> &percent = eh.get_holdings_float();
+
+    if (!percent.empty())
+    {
+        float total_holdings = 0.00;
+        for (const auto &p : percent)
+            total_holdings += p.second;
+        // JUST IN CASE IF TOTAL HOLDINGS IS GREATER THAN 100 I DONT WANT A NEGATIVE OTHER HOLDINGS NUMBER
+        if (total_holdings < 100)
+            eh.set_other_holdings(
+                (100 - total_holdings));
+    }
+
+    // SECTOR WEIGHTINGS
+    const std::unordered_map<std::string, float> &sector_weights = eh.get_sector_weightings();
+    if (!sector_weights.empty())
+    {
+        float total_industry_weight = 0.00;
+        for (const auto &p : sector_weights)
+            total_industry_weight += p.second;
+        if (total_industry_weight < 100)
+            eh.set_other_industry_weight((100 - total_industry_weight));
+    }
     std::vector<ETF_Holdings> *holdings_vec = jsonparseops->get_etf_holdings_vec_ptr();
     holdings_vec->push_back(std::move(eh));
-
-    // TESTING
-    int last_itm = static_cast<int>(holdings_vec->size()) - 1;
-    ETF_Holdings &etf = holdings_vec->at(last_itm);
-    std::unordered_map<std::string, std::string> &comp = etf.get_holdings_company_name();
-    std::unordered_map<std::string, float> &percent = etf.get_holdings_float();
-    std::vector<std::string> &keys = etf.get_holidings_keys();
-
-    for (const auto &i : keys)
-    {
-        std::cout << i << " " << comp.at(i) << " " << percent.at(i) << std::endl;
-    }
 
     return;
 }

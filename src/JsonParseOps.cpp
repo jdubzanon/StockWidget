@@ -902,17 +902,17 @@ bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c)
 
 JsonParseOps::JSON_CODES JsonParseOps::parse_etf_response_topholdings(const std::string &returned_json, ETF_Holdings &eh)
 {
-    std::cout << "parse started" << std::endl;
     Json::CharReaderBuilder reader;
     Json::Value jsonData;
     std::string errs;
 
     std::istringstream stream(returned_json);
     if (!Json::parseFromStream(reader, stream, &jsonData, &errs))
-
     {
         return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
     }
+
+    // std::cout << jsonData << std::endl;
 
     if (jsonData.isNull() || jsonData.empty())
     {
@@ -1003,6 +1003,37 @@ JsonParseOps::JSON_CODES JsonParseOps::parse_etf_response_profile(const std::str
     else
         profile_map["profile"] = clean_text(business_summary.asString()); // GETS RID OF -null- in text
     // MUST USE IMGUI::TEXTWRAPPED TO GET THIS TO WRAP PROPERLY
+    return JsonParseOps::JSON_CODES::JSON_PARSE_SUCCESS;
+}
+
+JsonParseOps::JSON_CODES JsonParseOps::parse_etf_sector_weightings(const std::string &returned_json, ETF_Holdings &eh)
+{
+    Json::CharReaderBuilder reader;
+    Json::Value jsonData;
+    std::string errs;
+
+    std::istringstream stream(returned_json);
+    if (!Json::parseFromStream(reader, stream, &jsonData, &errs))
+        return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
+
+    if (jsonData.isNull() || jsonData.empty())
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+    const Json::Value &top_holdings = jsonData["topHoldings"];
+    if (top_holdings.isNull() || top_holdings.empty())
+        return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;
+
+    const Json::Value &sector_holdings_section = top_holdings["sectorWeightings"];
+    if (!sector_holdings_section.isNull() && sector_holdings_section.isArray() && !sector_holdings_section.empty())
+    {
+        std::unordered_map<std::string, float> &weightings_map = eh.get_sector_weightings();
+        for (Json::Value::const_iterator itr = sector_holdings_section.begin(); itr != sector_holdings_section.end(); itr++)
+        {
+            const Json::Value &sector_obj = *itr;
+            const std::string sector_name = sector_obj.getMemberNames()[0];
+            weightings_map[sector_name] = (sector_obj[sector_name].asFloat() * 100);
+        }
+    }
+
     return JsonParseOps::JSON_CODES::JSON_PARSE_SUCCESS;
 }
 
