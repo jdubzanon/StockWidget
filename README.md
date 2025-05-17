@@ -15,7 +15,7 @@ The free tier only comes with 500 calls per month.
 
 * https://rapidapi.com/3b-data-3b-data-default/api/yahoo-finance-real-time1
 
-* Note: I do not make any money off this api, It is just the api i chose to build on.
+* Note: I do not make any money off this api, It is just the api i decided to build on based on price and information availability.
 
 
 Ensure you have the following installed on your system:
