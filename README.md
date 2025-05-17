@@ -55,7 +55,7 @@ Download the latest release `.deb` package and install it:
 
 ```bash
 wget https://github.com/jdubzanon/StockWidget/releases/download/1.11/stockwidget_1.11-1_amd64.deb
-sudo apt install ./stockwidget_1.0-1_amd64.deb
+sudo apt install ./stockwidget_1.11-1_amd64.deb
 ```
 
 # To Uninstall Program
