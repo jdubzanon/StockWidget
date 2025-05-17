@@ -313,9 +313,11 @@ void guiWindowOps::delete_operations(const std::string &ticker)
     backendops->run_delete_from_financials_operations(ticker);
     backendops->run_delete_from_charts_operations(ticker);
     backendops->run_delete_from_metrics_operations(ticker);
+    backendops->run_delete_from_etf_holdings_operations(ticker);
     delete_from_boolean_map(financials_window_booleans, ticker);
     delete_from_boolean_map(selectable_booleans, ticker);
     delete_from_boolean_map(chart_booleans, ticker);
+    delete_from_boolean_map(etf_holdings_booleans, ticker);
     file_status.watchlist_empty = backendops->get_watchlist_file_status();
 }
 

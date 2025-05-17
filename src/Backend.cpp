@@ -120,6 +120,7 @@ bool Backend::run_add_to_watchlist_operations(const std::string &ticker)
     return true;
 }
 
+// Public
 bool Backend::run_delete_from_watchlist_operations(const std::string &ticker)
 {
     std::string ticker_copy = ticker;
@@ -204,6 +205,25 @@ void Backend::run_delete_from_metrics_operations(const std::string &ticker)
 
         auto it = std::find_if(mutable_vector.begin(), mutable_vector.end(),
                                [&ticker_to_uppercase](const Metrics &node)
+                               {
+                                   return node.get_ticker() == ticker_to_uppercase;
+                               });
+
+        if (it != mutable_vector.end())
+            mutable_vector.erase(it);
+    }
+}
+
+// PUBLIC
+void Backend::run_delete_from_etf_holdings_operations(const std::string &ticker)
+{
+    std::string ticker_copy = ticker;
+    std::string ticker_to_uppercase = make_uppercase(ticker_copy);
+    {
+        std::vector<ETF_Holdings> &mutable_vector = jsonparseops->get_etf_holdings_vec();
+
+        auto it = std::find_if(mutable_vector.begin(), mutable_vector.end(),
+                               [&ticker_to_uppercase](const ETF_Holdings &node)
                                {
                                    return node.get_ticker() == ticker_to_uppercase;
                                });
@@ -637,6 +657,7 @@ bool Backend::run_financials_operations(const std::string &ticker)
     requestops->multicurl_cleanup();
     return true;
 }
+
 // PUBLIC
 bool Backend::run_generate_summary_operations(const std::string &ticker)
 {

@@ -1089,3 +1089,8 @@ std::vector<ETF_Holdings> *JsonParseOps::get_etf_holdings_vec_ptr()
 {
     return &etf_holdings_vec;
 }
+
+std::vector<ETF_Holdings> &JsonParseOps::get_etf_holdings_vec()
+{
+    return etf_holdings_vec;
+}

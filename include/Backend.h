@@ -45,6 +45,7 @@ public:
     void run_delete_from_financials_operations(const std::string &ticker);
     void run_delete_from_charts_operations(const std::string &ticker);
     void run_delete_from_metrics_operations(const std::string &ticker);
+    void run_delete_from_etf_holdings_operations(const std::string &ticker);
     void run_add_api_key_operations(const std::string &api_key);
     bool run_multi_watchlist_api_calls_operations();
     bool run_financials_operations(const std::string &ticker);
