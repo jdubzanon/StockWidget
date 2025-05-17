@@ -13,8 +13,9 @@ StockWidget is a graphical desktop application, FOR LINUX OS ONLY, that displays
 The link below is the API the program is built on. The API comes with a free tier, although, I do recommend the $10 tier.
 The free tier only comes with 500 calls per month.
 
+* https://rapidapi.com/3b-data-3b-data-default/api/yahoo-finance-real-time1
+
 * Note: I do not make any money off this api, It is just the api i chose to build on.
-https://rapidapi.com/3b-data-3b-data-default/api/yahoo-finance-real-time1
 
 
 Ensure you have the following installed on your system:
