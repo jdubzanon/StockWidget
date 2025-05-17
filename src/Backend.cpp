@@ -833,7 +833,6 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internet?\nif so API may be down");
 
     const std::string &top_holdings_json = map.at("top-holdings");
-    // std::cout << top_holdings_json << std::endl; // PRINT STATEMENT
     confirm_apikey(top_holdings_json, map);
 
     // ETF_HOLDINGS OBJECT MAP OPERATIONS
@@ -847,7 +846,6 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "Something went wrong with holdings\nTry again?");
     }
 
-    // ########################WORKING HERE RIGHT NOW&&&&&&&&&&&&&&&&&&&^^^^^^^^^^^^^^^^$$$$$$$$$$$$
     JsonParseOps::JSON_CODES sector_json_code = jsonparseops->parse_etf_sector_weightings(top_holdings_json, eh_ref);
     if (sector_json_code == JsonParseOps::JSON_CODES::JSON_PARSE_FAILED || sector_json_code == JsonParseOps::JSON_CODES::JSON_STREAM_FAILED)
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "sector json parse failure\ntry again?");
