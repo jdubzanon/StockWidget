@@ -15,9 +15,14 @@ std::unordered_map<std::string, float> &ETF_Holdings::get_holdings_float()
     return holdings_percent;
 }
 
-std::unordered_map<std::string, float> &ETF_Holdings::get_sector_weightings()
+std::vector<std::string> &ETF_Holdings::get_sector_names_vec()
 {
-    return sector_weightings;
+    return sector_names;
+}
+
+std::vector<double> &ETF_Holdings::get_sector_weights_vec()
+{
+    return sector_weights;
 }
 
 std::unordered_map<std::string, std::string> &ETF_Holdings::get_holdings_company_name()

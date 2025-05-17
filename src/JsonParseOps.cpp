@@ -1025,12 +1025,14 @@ JsonParseOps::JSON_CODES JsonParseOps::parse_etf_sector_weightings(const std::st
     const Json::Value &sector_holdings_section = top_holdings["sectorWeightings"];
     if (!sector_holdings_section.isNull() && sector_holdings_section.isArray() && !sector_holdings_section.empty())
     {
-        std::unordered_map<std::string, float> &weightings_map = eh.get_sector_weightings();
+        std::vector<std::string> &sector_names = eh.get_sector_names_vec();
+        std::vector<double> &sector_weights = eh.get_sector_weights_vec();
         for (Json::Value::const_iterator itr = sector_holdings_section.begin(); itr != sector_holdings_section.end(); itr++)
         {
             const Json::Value &sector_obj = *itr;
-            const std::string sector_name = sector_obj.getMemberNames()[0];
-            weightings_map[sector_name] = (sector_obj[sector_name].asFloat() * 100);
+            const std::string sector_name = std::string(sector_obj.getMemberNames()[0]);
+            sector_names.push_back(sector_name);
+            sector_weights.push_back((sector_obj[sector_name].asDouble() * 100));
         }
     }
 

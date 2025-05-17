@@ -1297,45 +1297,74 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     const std::vector<std::string> &keys = etf_ref.get_holidings_keys();
 
     ImGui::Begin(ticker.c_str(), &open_ref, ImGuiWindowFlags_NoCollapse);
-    ImVec2 window_size = ImGui::GetWindowSize();
-    ImGui::PushFont(font_change);
-    ImGui::Text("Top Holdings");
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(window_size.x * 0.6f);
-    ImGui::Text("Sector Weights");
-    ImGui::PopFont();
+    if (!keys.empty())
+    {
 
-    ImGui::BeginTable(windowid.c_str(), 2, ImGuiTableFlags_BordersOuter, ImVec2(window_size.x * 0.5f, window_size.y * 0.5f));
-    ImGui::TableNextRow();
-    ImGui::TableHeadersRow();
-    ImGui::TableSetColumnIndex(0);
-    ImGui::Text("name");
-    ImGui::TableSetColumnIndex(1);
-    ImGui::Text("Holdings percent");
-    ImGui::TableNextRow();
-    for (auto it = keys.begin(); it != keys.end(); it++)
-    {
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("%s", company_name_map.at(*it).c_str());
-        ImGui::TableSetColumnIndex(1);
-        ImVec2 cursor_pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPosX(cursor_pos.x + 35);
-        ImGui::Text("%.2f", percent_map.at(*it));
+        ImVec2 window_size = ImGui::GetWindowSize();
+        ImGui::PushFont(font_change);
+        ImGui::Text("Top Holdings");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(window_size.x * 0.6f);
+        ImGui::Text("Sector Weights");
+        ImGui::PopFont();
+
+        ImGui::BeginTable(windowid.c_str(), 2, ImGuiTableFlags_BordersOuter, ImVec2(window_size.x * 0.4f, window_size.y * 0.5f));
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Holding Percent", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        ImGui::TableHeadersRow();
         ImGui::TableNextRow();
+        for (auto it = keys.begin(); it != keys.end(); it++)
+        {
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%s", company_name_map.at(*it).c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImVec2 cursor_pos = ImGui::GetCursorPos();
+            ImGui::SetCursorPosX(cursor_pos.x + 35);
+            ImGui::Text("%.2f", percent_map.at(*it));
+            ImGui::TableNextRow();
+        }
+        if (etf_ref.get_other_holdings() > 0)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Other");
+            ImGui::TableSetColumnIndex(1);
+            ImVec2 cursor_pos = ImGui::GetCursorPos();
+            ImGui::SetCursorPosX(cursor_pos.x + 35);
+            ImGui::Text("%.2f", etf_ref.get_other_holdings());
+        }
+        ImGui::EndTable();
+        ImGui::SameLine();
+        // genterate pie chart here
+        const std::vector<std::string> &sector_names = etf_ref.get_sector_names_vec();
+        const std::vector<double> &sector_weights = etf_ref.get_sector_weights_vec();
+
+        std::vector<const char *> sector_names_cstr;
+        for (const auto &name : sector_names)
+            sector_names_cstr.push_back(name.c_str());
+
+        int slices = static_cast<int>(sector_names.size());
+        ImVec2 plot_size = ImVec2(window_size.x * 0.55f, window_size.y * 0.5f);
+
+        if (ImPlot::BeginPlot(ticker.c_str(), plot_size, ImPlotFlags_NoMouseText | ImPlotFlags_Equal))
+        {
+            ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoGridLines);
+            ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoGridLines);
+            ImPlot::PlotPieChart(sector_names_cstr.data(), sector_weights.data(), slices, 0.5, 0.5, 0.4, "%.2f", 90, ImPlotPieChartFlags_Exploding);
+            ImPlot::EndPlot();
+        }
     }
-    if (etf_ref.get_other_holdings() > 0)
+    else
     {
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("Other");
-        ImGui::TableSetColumnIndex(1);
-        ImVec2 cursor_pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPosX(cursor_pos.x + 35);
-        ImGui::Text("%.2f", etf_ref.get_other_holdings());
+        ImGui::PushFont(font_change);
+        ImGui::Text("ETF %s has no top holdings or sector weights", ticker.c_str());
+        ImGui::PopFont();
     }
-    ImGui::EndTable();
-    ImGui::SameLine();
-    // genterate pie chart here
+
+    ImGui::SeparatorText("Profile Description");
+    std::unordered_map<std::string, std::string> &profile_desc = etf_ref.get_profile_map();
+    ImGui::TextWrapped("%s", profile_desc.at("profile").c_str());
+
     ImGui::End();
     return true;
 }

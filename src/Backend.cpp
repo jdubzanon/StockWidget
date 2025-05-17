@@ -854,12 +854,12 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
     }
 
     // SECTOR WEIGHTINGS
-    const std::unordered_map<std::string, float> &sector_weights = eh.get_sector_weightings();
+    const std::vector<double> &sector_weights = eh.get_sector_weights_vec();
     if (!sector_weights.empty())
     {
         float total_industry_weight = 0.00;
-        for (const auto &p : sector_weights)
-            total_industry_weight += p.second;
+        for (const auto &w : sector_weights)
+            total_industry_weight += w;
         if (total_industry_weight < 100)
             eh.set_other_industry_weight((100 - total_industry_weight));
     }
