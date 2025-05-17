@@ -394,7 +394,7 @@ bool Backend::run_multi_watchlist_api_calls_operations()
     std::vector<std::string> endpoints = fileops->create_api_endpoints_from_watchlist();
     std::vector<std::string> temp_endpoints;
     int start = 0;
-    int end = 10;
+    int end = 9;
     bool end_endpoints = false;
 
     while (true)
