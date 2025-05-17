@@ -1335,7 +1335,7 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
         }
         ImGui::EndTable();
         ImGui::SameLine();
-        // genterate pie chart here
+
         const std::vector<std::string> &sector_names = etf_ref.get_sector_names_vec();
         const std::vector<double> &sector_weights = etf_ref.get_sector_weights_vec();
 

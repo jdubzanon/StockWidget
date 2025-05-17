@@ -8,6 +8,11 @@ StockWidget is a graphical desktop application, FOR LINUX OS ONLY, that displays
 * Interactive user interface built with ImGui
 
 ## Prerequisites for building from source
+To use this program you have to sign up for an api offered on the rapidapi.com marketplace.
+This is the link to the api that i have built on.
+I do not make any money off this api, It is just the api i chose to build on.
+https://rapidapi.com/3b-data-3b-data-default/api/yahoo-finance-real-time1
+
 
 Ensure you have the following installed on your system:
 
@@ -69,7 +74,7 @@ StockWidget
 
 # Example of UI
 
-![StockWidget UI](images/StockWidget_UI.png)
+![StockWidget UI](images/stockwidget_ui.png)
 
 
 ## Contributing
