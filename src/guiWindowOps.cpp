@@ -1168,18 +1168,17 @@ void guiWindowOps::making_api_call_window(GLFWwindow *window, ImFont *midsize_f,
 // THIS IS FOR CHANGE OR ADD API KEY
 void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std::string &text, const std::string &button_label, ImFont *font_change, bool &open)
 {
-    int glfwidth, glfwheight;
-    glfwGetWindowSize(window, &glfwidth, &glfwheight);
-
-    ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_Always);
-
-    ImGui::SetNextWindowPos(ImVec2(glfwidth / 2 - 200, glfwheight / 2 - 100), ImGuiCond_Once);
-
-    ImGui::Begin("Add Api Key", &open, ImGuiWindowFlags_NoMove);
-    ImGui::PushFont(font_change);
+    set_window_parameters(window, font_change);
+    ImGui::Begin("Add Api Key", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoMove);
     ImGui::Text("%s", text.c_str());
     ImGui::PopFont();
     ImGui::InputText("Enter Key", input_bucket, IM_ARRAYSIZE(input_bucket));
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 30);
+    ImGui::Text("use Ctrl-v to paste");
+    ImGui::SameLine();
+    float text_size = ImGui::CalcTextSize(button_label.c_str()).x + 15;
+    ImGui::SetCursorPosX((ImGui::GetWindowSize().x) - text_size);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.8f));
     if (ImGui::Button(button_label.c_str()))
     {
 
@@ -1192,6 +1191,9 @@ void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std
         api_workflow.try_again = true;
         open = false;
     }
+    if (ImGui::IsItemHovered())
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+    ImGui::PopStyleColor();
     ImGui::End();
 }
 
@@ -1199,12 +1201,16 @@ void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std
 void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_change, bool &open)
 {
     set_window_parameters(window, font_change);
-    ImGui::Begin("Add To Watchlist", &open);
+    ImGui::Begin("Add To Watchlist", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
     ImGui::Text("Add Ticker");
     ImGui::PopFont();
     ImGui::InputText("Enter Ticker", input_bucket, IM_ARRAYSIZE(input_bucket));
     ImVec2 window_size = ImGui::GetWindowSize();
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 30);
+    ImGui::Text("Crypto is suffixed -USD Example BTC-USD");
+    ImGui::SameLine();
     ImGui::SetCursorPosX(window_size.x - 50);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.8f));
     if (ImGui::Button("Add"))
     {
         popup_booleans.open_add_to_watchlist_window = false;
@@ -1220,6 +1226,9 @@ void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_chan
         etf_holdings_booleans.insert_or_assign(uppercase_copy, false);
         reset_arr();
     }
+    if (ImGui::IsItemHovered())
+        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+    ImGui::PopStyleColor();
     ImGui::End();
 }
 
