@@ -759,7 +759,7 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
         mutable_met_vec.push_back(std::move(metric));
     }
 
-    if (quote_type.empty() || quote_type != "CRYPTOCURRENCY" || quote_type != "EQUITY" || quote_type != "ETF")
+    if (quote_type.empty() && quote_type != "CRYPTOCURRENCY" && quote_type != "EQUITY" && quote_type != "ETF")
     {
         throw BackendException(BackendException::ErrorType::NO_EQUITY_TYPE, "Couldn't derive a security type for stock\nran equity parsing as default\nsome information may be missing..sorry");
     }
