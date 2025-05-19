@@ -911,20 +911,20 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.647f, 0.0f, 1.0f));
                 ImGui::TableSetColumnIndex(0);
-                // if (stock.get_quote_type() == "EQUITY" || stock.get_quote_type() == "CRYPTOCURRENCY" || stock.get_quote_type() == "ETF")
-                // {
-                if (ImGui::Selectable(stock.get_ticker().c_str(), &selectable_booleans[stock.get_ticker()]))
+                if (stock.get_quote_type() == "EQUITY" || stock.get_quote_type() == "CRYPTOCURRENCY" || stock.get_quote_type() == "ETF")
                 {
-                    selectable_booleans[stock.get_ticker()] = true;
-                }
+                    if (ImGui::Selectable(stock.get_ticker().c_str(), &selectable_booleans[stock.get_ticker()]))
+                    {
+                        selectable_booleans[stock.get_ticker()] = true;
+                    }
 
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                    }
                 }
-                // }
-                // else
-                // ImGui::Text("%s", stock.get_ticker().c_str());
+                else
+                    ImGui::Text("%s", stock.get_ticker().c_str());
 
                 ImGui::PopStyleColor(2);
                 // COLUMN 2
