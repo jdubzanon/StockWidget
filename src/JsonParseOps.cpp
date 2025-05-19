@@ -912,8 +912,6 @@ JsonParseOps::JSON_CODES JsonParseOps::parse_etf_response_topholdings(const std:
         return JsonParseOps::JSON_CODES::JSON_STREAM_FAILED;
     }
 
-    // std::cout << jsonData << std::endl;
-
     if (jsonData.isNull() || jsonData.empty())
     {
         return JsonParseOps::JSON_CODES::JSON_PARSE_FAILED;

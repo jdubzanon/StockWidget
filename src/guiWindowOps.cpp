@@ -911,6 +911,8 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.647f, 0.0f, 1.0f));
                 ImGui::TableSetColumnIndex(0);
+                // if (stock.get_quote_type() == "EQUITY" || stock.get_quote_type() == "CRYPTOCURRENCY" || stock.get_quote_type() == "ETF")
+                // {
                 if (ImGui::Selectable(stock.get_ticker().c_str(), &selectable_booleans[stock.get_ticker()]))
                 {
                     selectable_booleans[stock.get_ticker()] = true;
@@ -920,6 +922,10 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                 {
                     ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
                 }
+                // }
+                // else
+                // ImGui::Text("%s", stock.get_ticker().c_str());
+
                 ImGui::PopStyleColor(2);
                 // COLUMN 2
 
@@ -1443,6 +1449,7 @@ void guiWindowOps::reset_necessary_guiops_booleans()
     api_workflow.chart_call = false;
     api_workflow.api_key_entry_call = false;
     api_workflow.multi_etf_holdings_call = false;
+    api_workflow.single_api_call = false;
 
     program_state.adding_api = false;
     program_state.changing_api = false;

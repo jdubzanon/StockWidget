@@ -109,14 +109,34 @@ bool Backend::run_add_to_watchlist_operations(const std::string &ticker)
         if (!fileops->confirm_ticker_added_to_file(ticker_to_uppercase))
         {
             mutable_response_map.clear();
-            throw BackendException(BackendException::ErrorType::FILE_WRITE_COMMON, "There was a problem writing to ticker to file. plese try again..");
+            throw BackendException(BackendException::ErrorType::FILE_WRITE_COMMON, "There was a problem writing to ticker to file\nplease try again..");
         }
         if (unavail)
         {
-            throw BackendException(BackendException::ErrorType::API_INFO_CURRENTLY_UNAVAILABLE, "Information is currently unavailable. ticker added to watchlist");
+            throw BackendException(BackendException::ErrorType::API_INFO_CURRENTLY_UNAVAILABLE, "Information is currently unavailableT\nicker added to watchlist");
         }
     }
 
+    // FIND THE OBJECT THAT I JUST PUT IN THERE, CHECK THE QUOTE TYPE AND THROW ERROR/WARNING UNSUPPORTED TYPE
+
+    const std::vector<StockInfo> &vec = jsonparseops->get_immutable_stockinfo_vec();
+    auto it = std::find_if(vec.begin(), vec.end(),
+                           [&ticker_to_uppercase](const StockInfo &node)
+                           { return node.get_ticker() == ticker_to_uppercase; });
+    if (it != vec.end())
+    {
+        int pos = std::distance(vec.begin(), it);
+        const StockInfo &node = vec.at(pos);
+        // had to ask chatgpt for this logic. i couldnt figure it out
+        // if it doesnt equal any of these then throw error
+        if (node.get_quote_type() != "EQUITY" && node.get_quote_type() != "CRYPTOCURRENCY" && node.get_quote_type() != "ETF")
+        {
+            std::ostringstream oss;
+            oss << "Unsupported quote type\n"
+                << node.get_quote_type() << "\ninformation may be unavailable";
+            throw BackendException(BackendException::ErrorType::UNSUPPORTED_QUOTE_TYPE, oss.str());
+        }
+    }
     return true;
 }
 
@@ -705,7 +725,7 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
     {
         if (!jsonparseops->parse_type_equity_summary(returned_json, metric_ref))
         {
-            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "something went wrong ,failed to parse equity summary");
+            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY, "something went wrong\nfailed to parse equity summary");
         }
     }
     else if (quote_type == "ETF")
@@ -713,21 +733,24 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
         // run etf parsing code here
         if (!jsonparseops->parse_type_etf_summary(returned_json, metric_ref))
         {
-            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "something went wrong ,failed to parse ETF summary");
+            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY, "something went wrong\nfailed to parse ETF summary");
         }
     }
     else if (quote_type == "CRYPTOCURRENCY")
     {
         if (!jsonparseops->parse_summary_crypto(returned_json, metric_ref))
         {
-            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "something went wrong ,failed to parse crypto summary");
+            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY, "something went wrong\nfailed to parse crypto summary");
         }
     }
     else // if i cant get a quote type ill just run this and get what i can get then throw an error explaining the issues
     {
         if (!jsonparseops->parse_type_equity_summary(returned_json, metric_ref))
         {
-            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "something went wrong ,failed to parse equity summary");
+            std::ostringstream oss;
+            oss << "Something went wrong\n"
+                << quote_type << " unsupported";
+            throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY, oss.str());
         }
     }
 
@@ -736,7 +759,7 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
         mutable_met_vec.push_back(std::move(metric));
     }
 
-    if (quote_type.empty())
+    if (quote_type.empty() || quote_type != "CRYPTOCURRENCY" || quote_type != "EQUITY" || quote_type != "ETF")
     {
         throw BackendException(BackendException::ErrorType::NO_EQUITY_TYPE, "Couldn't derive a security type for stock\nran equity parsing as default\nsome information may be missing..sorry");
     }
@@ -826,7 +849,12 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
 
     // THIS POPULATES MAP AND MANUALLY DELETES THINGS IF RETURN WAS BAD
     if (!requestops->perform_multi_request_holdings(ticker, api_key))
+    {
+        requestops->multicurl_cleanup();
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "API call failed, Try again?");
+    }
+
+    requestops->multicurl_cleanup();
 
     // CHECK IF EMPTY FROM MANUAL DELETE FUNCTION IN REQUEST OPS. IF ITS EMPTY NO RESPONSES WERE RECIEVED
     if (map.empty())

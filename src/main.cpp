@@ -286,7 +286,10 @@ int main()
                     if (e.getType() == BackendException::ErrorType::API_CONFIRMATION_FAILED ||
                         e.getType() == BackendException::ErrorType::JSON_PARSE_FAILURE ||
                         e.getType() == BackendException::ErrorType::FILE_WRITE_COMMON ||
-                        e.getType() == BackendException::ErrorType::API_CALL_FAILED)
+                        e.getType() == BackendException::ErrorType::API_CALL_FAILED ||
+                        e.getType() == BackendException::ErrorType::NO_EQUITY_TYPE ||
+                        e.getType() == BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY ||
+                        e.getType() == BackendException::ErrorType::UNSUPPORTED_QUOTE_TYPE)
 
                     {
                         if (e.getType() == BackendException::ErrorType::FILE_WRITE_COMMON)
@@ -309,8 +312,16 @@ int main()
                             g->delete_from_boolean_map(sel_bool_map, target);
                             g->delete_from_boolean_map(chart_bool_map, target);
                         }
-                        else if (e.getType() == BackendException::ErrorType::API_CONFIRMATION_FAILED)
+                        else if (e.getType() == BackendException::ErrorType::API_CONFIRMATION_FAILED ||
+                                 e.getType() == BackendException::ErrorType::NO_EQUITY_TYPE ||
+                                 e.getType() == BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY ||
+                                 e.getType() == BackendException::ErrorType::UNSUPPORTED_QUOTE_TYPE)
                         {
+                            if (e.getType() == BackendException::ErrorType::JSON_PARSE_FAILURE_SUMMARY)
+                            {
+                                std::unordered_map<std::string, bool> &selectable_bools = g->get_selectable_booleans();
+                                selectable_bools.at(g->api_workflow.ticker) = false;
+                            }
                             g->api_workflow.try_again = false;
                         }
                         else
