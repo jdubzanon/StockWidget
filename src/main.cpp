@@ -66,6 +66,7 @@ int main()
     std::string midsize_font_path = font_base_path + "Roboto-Medium.ttf";
     std::string title_font_path = font_base_path + "Roboto-Bold.ttf";
     ImFont *default_font = io.Fonts->AddFontFromFileTTF(default_font_path.c_str(), 16.0f);
+    ImFont *default_font_small = io.Fonts->AddFontFromFileTTF(default_font_path.c_str(), 12.0f);
     ImFont *default_font_italic = io.Fonts->AddFontFromFileTTF(default_font_italic_path.c_str(), 16.0f);
     ImFont *midsize_font = io.Fonts->AddFontFromFileTTF(midsize_font_path.c_str(), 24.0f);
     ImFont *title_font = io.Fonts->AddFontFromFileTTF(title_font_path.c_str(), 32.0f);
@@ -111,7 +112,7 @@ int main()
         // WATCHLIST
         if (!g->program_state.program_startup && !g->file_status.api_key_empty)
         {
-            g->generate_watchlist(window, title_font);
+            g->generate_watchlist(window, title_font, default_font_small);
         }
 
         // OPEN ERROR WINDOW
@@ -245,6 +246,8 @@ int main()
                         e.getType() == BackendException::ErrorType::API_KEY_FILE_EMPTY ||
                         e.getType() == BackendException::ErrorType::API_INFO_CURRENTLY_UNAVAILABLE)
                     {
+                        if (e.getType() == BackendException::ErrorType::API_INFO_CURRENTLY_UNAVAILABLE)
+                            g->setup_window_boolean_maps();
                         g->api_workflow.try_again = false;
                     }
                     else if (e.getType() == BackendException::ErrorType::FINANICALS_JSON_EMPTY ||

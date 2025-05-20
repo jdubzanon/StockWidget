@@ -24,6 +24,7 @@ guiWindowOps::~guiWindowOps()
 // PRIVATE
 void guiWindowOps::generate_menubar()
 {
+
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("Menu"))
@@ -675,6 +676,25 @@ void guiWindowOps::generate_metrics_table_special(const std::vector<std::unorder
     ImGui::PopID();
 }
 
+// PRIVATE
+void guiWindowOps::show_metrics_prompt(bool &ref, ImFont *small_font, bool supported)
+{
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    ImGui::SetNextWindowPos(ImVec2(mouse_pos.x + 5, mouse_pos.y - 5));
+    ImGui::SetNextWindowSize(ImVec2(75, 25));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+    ImGui::PushFont(small_font);
+    ImGui::Begin("##indicator", &ref, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+    if (supported)
+        ImGui::Text("show metrics");
+    else
+        ImGui::Text("unsupported");
+    ImGui::PopFont();
+    ImGui::PopStyleColor(2);
+    ImGui::End();
+}
+
 // ##############################################PUBLIC#######################
 
 std::vector<StockInfo> *guiWindowOps::get_watchlist_vec_ptr()
@@ -820,7 +840,7 @@ void guiWindowOps::run_chart_vec_manager()
 
 // ######################WINDOWS#########################
 //  PUBLIC
-void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
+void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font, ImFont *small_font)
 {
 
     // WINDOW STYLES
@@ -838,11 +858,11 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
 
     if (program_state.trigger_error)
     {
-        flags = flag_settings.with_error_flags;
+        flags = flag_settings.with_error_flags_watchlist;
     }
     else
     {
-        flags = flag_settings.no_error_flags;
+        flags = flag_settings.no_error_flags_watchlist;
     }
 
     ImGui::Begin("Watchlist", NULL, flags);
@@ -921,11 +941,21 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font)
                     if (ImGui::IsItemHovered())
                     {
                         ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                        program_state.selectable_is_hovered = true;
+                        bool &hover_state = program_state.selectable_is_hovered;
+                        show_metrics_prompt(hover_state, small_font, true);
                     }
                 }
                 else
+                {
                     ImGui::Text("%s", stock.get_ticker().c_str());
-
+                    if (ImGui::IsItemHovered())
+                    {
+                        program_state.selectable_is_hovered = true;
+                        bool &hover_state = program_state.selectable_is_hovered;
+                        show_metrics_prompt(hover_state, small_font, false);
+                    }
+                }
                 ImGui::PopStyleColor(2);
                 // COLUMN 2
 
@@ -1034,8 +1064,13 @@ bool guiWindowOps::generate_stockfinancials_window(GLFWwindow *window, const std
     {
         return false;
     }
-
     static float windowYpos = 10.0;
+
+    ImGuiWindowFlags flags;
+    if (program_state.trigger_error)
+        flags = flag_settings.with_error_flags_financials;
+    else
+        flags = flag_settings.no_error_flags_financials;
 
     int glfw_width, glfw_height;
     glfwGetWindowSize(window, &glfw_width, &glfw_height);
@@ -1066,7 +1101,8 @@ bool guiWindowOps::generate_stockfinancials_window(GLFWwindow *window, const std
 
     ImGui::PushFont(font_change);
 
-    ImGui::Begin(text.c_str(), &ref, ImGuiWindowFlags_NoCollapse);
+    ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(0.52f, 0.73f, 0.40f, 1.0f));
+    ImGui::Begin(text.c_str(), &ref, flags);
     ImGui::PopFont();
     generate_table_label("Earnings Section", font_change, green);
     ImGui::SeparatorText("Quarterly EPS");
@@ -1080,7 +1116,7 @@ bool guiWindowOps::generate_stockfinancials_window(GLFWwindow *window, const std
     generate_table(bs_ptr, "Balance Sheet");
     generate_table_label("Cashflow", font_change, blue);
     generate_table(cf_ptr, "Cashflow");
-
+    ImGui::PopStyleColor();
     ImGui::End();
 
     return true;
@@ -1175,7 +1211,10 @@ void guiWindowOps::making_api_call_window(GLFWwindow *window, ImFont *midsize_f,
 void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std::string &text, const std::string &button_label, ImFont *font_change, bool &open)
 {
     set_window_parameters(window, font_change);
-    ImGui::Begin("Add Api Key", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoMove);
+    ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(1.00f, 0.65f, 0.00f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.00f, 0.20f, 0.00f, 1.0f));
+    ImGui::Begin("Add Api Key", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::PopStyleColor(2);
     ImGui::Text("%s", text.c_str());
     ImGui::PopFont();
     ImGui::InputText("Enter Key", input_bucket, IM_ARRAYSIZE(input_bucket));
@@ -1207,12 +1246,15 @@ void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std
 void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_change, bool &open)
 {
     set_window_parameters(window, font_change);
+    ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(1.00f, 0.65f, 0.00f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.00f, 0.20f, 0.00f, 1.0f));
     ImGui::Begin("Add To Watchlist", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
-    ImGui::Text("Add Ticker");
+    ImGui::PopStyleColor(2);
     ImGui::PopFont();
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 40);
     ImGui::InputText("Enter Ticker", input_bucket, IM_ARRAYSIZE(input_bucket));
     ImVec2 window_size = ImGui::GetWindowSize();
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 30);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
     ImGui::Text("Crypto is suffixed -USD Example BTC-USD");
     ImGui::SameLine();
     ImGui::SetCursorPosX(window_size.x - 50);
@@ -1244,6 +1286,12 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
 
     int pos = backendops->get_chart_obj_position_in_vec(ticker);
 
+    ImGuiWindowFlags flags;
+    if (program_state.trigger_error)
+        flags = flag_settings.with_error_flags_charts;
+    else
+        flags = flag_settings.no_error_flags_charts;
+
     if ((pos == -1))
     {
         return false;
@@ -1257,7 +1305,8 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     std::string windowid = oss.str();
 
     ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_FirstUseEver);
-    ImGui::Begin(windowid.c_str(), &open_ref);
+    ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(0.6f, 0.48f, 0.0f, 1.0f));
+    ImGui::Begin(windowid.c_str(), &open_ref, flags);
     std::vector<double> &plots = object_ref.get_price_data_ref();
     std::vector<double> &tstamps = object_ref.get_timestamp_ref();
     const std::vector<double> &below_avg = object_ref.get_below_avg_vec_const();
@@ -1285,6 +1334,7 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
         ImPlot::EndPlot();
     }
     ImGui::End();
+    ImGui::PopStyleColor();
     return true;
 }
 
@@ -1296,6 +1346,12 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
         return false;
     ETF_Holdings &etf_ref = etf_holdings_vec->at(pos);
     bool &open_ref = etf_holdings_booleans.at(ticker);
+
+    ImGuiWindowFlags flags;
+    if (program_state.trigger_error)
+        flags = flag_settings.with_error_flags_etf_holdings;
+    else
+        flags = flag_settings.no_error_flags_etf_holdings;
 
     std::ostringstream oss;
     oss << ticker << " Holdings";
@@ -1312,8 +1368,11 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     const std::unordered_map<std::string, float> &percent_map = etf_ref.get_holdings_float();
     const std::unordered_map<std::string, std::string> &company_name_map = etf_ref.get_holdings_company_name();
     const std::vector<std::string> &keys = etf_ref.get_holidings_keys();
+    ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(1.00f, 0.75f, 0.80f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    ImGui::Begin(ticker.c_str(), &open_ref, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin(ticker.c_str(), &open_ref, flags);
+    ImGui::PopStyleColor(2);
     if (!keys.empty())
     {
 
@@ -1381,7 +1440,7 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     ImGui::SeparatorText("Profile Description");
     std::unordered_map<std::string, std::string> &profile_desc = etf_ref.get_profile_map();
     ImGui::TextWrapped("%s", profile_desc.at("profile").c_str());
-
+    // ImGui::PopStyleColor();
     ImGui::End();
     return true;
 }

@@ -31,7 +31,7 @@ private:
     void set_window_parameters(GLFWwindow *window, ImFont *font_change);
     void delete_operations(const std::string &ticker);
     int get_class_pos(const std::string &ticker);
-    // void run_chart_vec_manager();
+    void show_metrics_prompt(bool &ref, ImFont *small_font, bool supported);
 
     void generate_table_label(const std::string &label, ImFont *font_change, ImVec4 &color);
     void generate_table(StockFinancials::BalanceSheetItems *ptr, const std::string &table_type);
@@ -45,9 +45,14 @@ private:
 private:
     struct
     {
-        ImGuiWindowFlags no_error_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
-        ImGuiWindowFlags with_error_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
-
+        ImGuiWindowFlags no_error_flags_watchlist = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags with_error_flags_watchlist = no_error_flags_watchlist | ImGuiWindowFlags_NoMouseInputs;
+        ImGuiWindowFlags no_error_flags_charts = ImGuiWindowFlags_NoCollapse;
+        ImGuiWindowFlags with_error_flags_charts = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
+        ImGuiWindowFlags no_error_flags_financials = ImGuiWindowFlags_NoCollapse;
+        ImGuiWindowFlags with_error_flags_financials = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
+        ImGuiWindowFlags no_error_flags_etf_holdings = ImGuiWindowFlags_NoCollapse;
+        ImGuiWindowFlags with_error_flags_etf_holdings = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
     } flag_settings;
 
 public:
@@ -96,6 +101,7 @@ public:
         bool dropbox_financial_clicked = false;
         bool dropbox_chart_clicked = false;
         bool dropbox_etf_holdings_clicked = false;
+        bool selectable_is_hovered = false;
     } program_state;
 
 public:
@@ -118,7 +124,7 @@ public:
     std::unordered_map<std::string, bool> &get_etf_holdings_booleans();
 
     // WINDOWS
-    void generate_watchlist(GLFWwindow *window, ImFont *large_font);
+    void generate_watchlist(GLFWwindow *window, ImFont *large_font, ImFont *small_font);
     bool generate_stockfinancials_window(GLFWwindow *window, const std::string &ticker, ImFont *font_change);
     void apiKeyFileEmptyWindow(GLFWwindow *window, ImFont *defualt_f, ImFont *title_f, ImFont *midsize_f, ImFont *defualt_italic);
     void making_api_call_window(GLFWwindow *window, ImFont *midsize_f, bool make_api_call);
