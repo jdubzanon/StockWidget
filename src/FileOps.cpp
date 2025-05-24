@@ -374,3 +374,42 @@ bool FileOps::confirm_ticker_deletion(const std::string &ticker)
     close_file(watchlistfile, preferred_octals, watchlist_abs_path);
     return true;
 }
+
+std::string FileOps::get_image_filepath() const
+{
+#ifdef DEV_MODE
+    return "../images/api_conf_image.png";
+#else
+    return "/usr/share/stockwidget/images/api_conf_image.png";
+#endif
+}
+
+// IMAGE FILE STUFF
+bool FileOps::prep_image_file_data()
+{
+    if (image_file.is_open())
+        image_file.close();
+
+    const std::string image_file_path = get_image_filepath();
+    file_size = static_cast<size_t>(fs::file_size(image_file_path));
+
+    image_file.open(image_file_path, binary_in);
+    if (!image_file.is_open())
+        return false;
+
+    file_data.resize(file_size);
+
+    image_file.read(reinterpret_cast<char *>(file_data.data()), file_size);
+    image_file.close();
+    return true;
+}
+
+const std::size_t &FileOps::get_file_size() const
+{
+    return file_size;
+}
+
+const std::vector<unsigned char> *FileOps::get_file_data()
+{
+    return &file_data;
+}

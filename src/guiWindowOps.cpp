@@ -34,6 +34,7 @@ void guiWindowOps::generate_menubar()
                 if (ImGui::MenuItem("Add Stock"))
                 {
                     popup_booleans.open_add_to_watchlist_window = true;
+                    program_state.adding_to_watchlist = true;
                 }
             }
             if (backendops->get_api_file_status())
@@ -44,7 +45,6 @@ void guiWindowOps::generate_menubar()
                     // these two toggle whats displayed on the dynamic window
                     program_state.changing_api = false; // redundancy
                     program_state.adding_api = true;
-                    // api_workflow.watchlist_call = false;
                 }
             }
             if (!backendops->get_api_file_status())
@@ -66,7 +66,6 @@ void guiWindowOps::generate_menubar()
                 {
                     api_workflow.need_make_api = true;
                     program_state.refresh_watchlist = true;
-                    api_workflow.multi_financial_call = false; // redundancy
                     api_workflow.multi_watchlist_call = true;
                 }
             }
@@ -783,6 +782,8 @@ void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiK
             backendops->run_add_api_key_operations(y);
             file_status.api_key_empty = backendops->get_api_file_status();
             reset_arr();
+            program_state.apikey_confirmation_success = true;
+            popup_booleans.open_apikey_success_window = true;
         }
     }
     else
@@ -856,7 +857,7 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font, Im
 
     ImGuiWindowFlags flags;
 
-    if (program_state.trigger_error)
+    if (program_state.trigger_error || program_state.adding_api || program_state.changing_api || program_state.adding_to_watchlist || program_state.apikey_confirmation_success)
     {
         flags = flag_settings.with_error_flags_watchlist;
     }
@@ -1067,7 +1068,7 @@ bool guiWindowOps::generate_stockfinancials_window(GLFWwindow *window, const std
     static float windowYpos = 10.0;
 
     ImGuiWindowFlags flags;
-    if (program_state.trigger_error)
+    if (program_state.trigger_error || program_state.adding_api || program_state.changing_api || program_state.adding_to_watchlist || program_state.apikey_confirmation_success)
         flags = flag_settings.with_error_flags_financials;
     else
         flags = flag_settings.no_error_flags_financials;
@@ -1243,6 +1244,37 @@ void guiWindowOps::Dynamic_apikey_operation_window(GLFWwindow *window, const std
 }
 
 // PUBLIC
+void guiWindowOps::generate_api_confirmed_window(GLFWwindow *window, ImFont *midsize_f, bool &open)
+{
+    int my_image_width = 0;
+    int my_image_height = 0;
+    GLuint my_image_texture = 0;
+    bool ret = backendops->run_api_confirmation_window_operations(&my_image_texture, &my_image_width, &my_image_height);
+    IM_ASSERT(ret);
+    float scale = 128.0f / my_image_height;
+    ImVec2 display_size = ImVec2(my_image_width * scale, my_image_height * scale);
+    set_window_parameters(window, midsize_f);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.00f, 0.20f, 0.00f, 1.0f));
+    ImGui::Begin("##api-conf-window", &open, flag_settings.api_confirmation_window_flags);
+    ImGui::Text("API Key Confirmed, LFG!!");
+    ImGui::PopFont();
+    ImVec2 window_size = ImGui::GetWindowSize();
+    float half_image = (display_size.x * 0.50f);
+    ImGui::SetCursorPosX((window_size.x * 0.5f) - half_image);
+    ImGui::Image((ImTextureID)(intptr_t)my_image_texture, display_size);
+    ImVec2 textsize = ImGui::CalcTextSize("Close");
+    ImGui::SetCursorPosX(window_size.x - textsize.x - 30);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.8f, 0.25f, 0.8f));
+    if (ImGui::Button("close"))
+    {
+        program_state.apikey_confirmation_success = false;
+        open = false;
+    }
+    ImGui::PopStyleColor(2);
+    ImGui::End();
+}
+
+// PUBLIC
 void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_change, bool &open)
 {
     set_window_parameters(window, font_change);
@@ -1287,7 +1319,7 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     int pos = backendops->get_chart_obj_position_in_vec(ticker);
 
     ImGuiWindowFlags flags;
-    if (program_state.trigger_error)
+    if (program_state.trigger_error || program_state.adding_api || program_state.changing_api || program_state.adding_to_watchlist || program_state.apikey_confirmation_success)
         flags = flag_settings.with_error_flags_charts;
     else
         flags = flag_settings.no_error_flags_charts;
@@ -1348,7 +1380,11 @@ bool guiWindowOps::generate_etf_holdings_window(GLFWwindow *window, const std::s
     bool &open_ref = etf_holdings_booleans.at(ticker);
 
     ImGuiWindowFlags flags;
-    if (program_state.trigger_error)
+    if (program_state.trigger_error ||
+        program_state.adding_api ||
+        program_state.changing_api ||
+        program_state.adding_to_watchlist ||
+        program_state.apikey_confirmation_success)
         flags = flag_settings.with_error_flags_etf_holdings;
     else
         flags = flag_settings.no_error_flags_etf_holdings;
@@ -1518,6 +1554,7 @@ void guiWindowOps::reset_necessary_guiops_booleans()
     program_state.dropbox_etf_holdings_clicked = false;
     program_state.dropbox_chart_clicked = false;
     program_state.trigger_error = false;
+    program_state.adding_to_watchlist = false;
 
     popup_booleans.open_add_to_watchlist_window = false;
     popup_booleans.open_dynamic_window = false;

@@ -45,7 +45,7 @@ private:
 private:
     struct
     {
-        ImGuiWindowFlags no_error_flags_watchlist = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+        ImGuiWindowFlags no_error_flags_watchlist = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove;
         ImGuiWindowFlags with_error_flags_watchlist = no_error_flags_watchlist | ImGuiWindowFlags_NoMouseInputs;
         ImGuiWindowFlags no_error_flags_charts = ImGuiWindowFlags_NoCollapse;
         ImGuiWindowFlags with_error_flags_charts = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
@@ -53,6 +53,8 @@ private:
         ImGuiWindowFlags with_error_flags_financials = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
         ImGuiWindowFlags no_error_flags_etf_holdings = ImGuiWindowFlags_NoCollapse;
         ImGuiWindowFlags with_error_flags_etf_holdings = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMouseInputs;
+        ImGuiWindowFlags api_confirmation_window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+
     } flag_settings;
 
 public:
@@ -71,6 +73,7 @@ public:
         bool open_add_to_watchlist_window = false;
         bool open_dynamic_window = false;
         bool open_error_window = false;
+        bool open_apikey_success_window = false;
 
     } popup_booleans;
 
@@ -102,6 +105,9 @@ public:
         bool dropbox_chart_clicked = false;
         bool dropbox_etf_holdings_clicked = false;
         bool selectable_is_hovered = false;
+        bool adding_to_watchlist = false;
+        bool apikey_confirmation_success = false;
+
     } program_state;
 
 public:
@@ -129,6 +135,7 @@ public:
     void apiKeyFileEmptyWindow(GLFWwindow *window, ImFont *defualt_f, ImFont *title_f, ImFont *midsize_f, ImFont *defualt_italic);
     void making_api_call_window(GLFWwindow *window, ImFont *midsize_f, bool make_api_call);
     void Dynamic_apikey_operation_window(GLFWwindow *window, const std::string &text, const std::string &button_label, ImFont *font_change, bool &open);
+    void generate_api_confirmed_window(GLFWwindow *window, ImFont *midsize_f, bool &open);
     bool display_chart_window(const std::string &ticker);
     bool generate_etf_holdings_window(GLFWwindow *window, const std::string &ticker, ImFont *font_change);
     void add_to_watchlist_window(GLFWwindow *window, ImFont *font_change, bool &open);

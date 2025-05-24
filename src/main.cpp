@@ -148,6 +148,14 @@ int main()
             }
         }
 
+        if (g->program_state.apikey_confirmation_success)
+        {
+            // THIS IS CHANGED IN guiWindowOps::make_api_call() if no error is thrown
+            bool window_open = g->popup_booleans.open_apikey_success_window;
+            bool &open_ref = window_open;
+            g->generate_api_confirmed_window(window, midsize_font, open_ref);
+        }
+
         // OPENS ADD STOCK WINDOW
         if (g->popup_booleans.open_add_to_watchlist_window)
         {
@@ -191,7 +199,9 @@ int main()
             if (pair.second)
             {
                 if (g->generate_etf_holdings_window(window, pair.first, midsize_font))
-                    ;
+                {
+                    // NO STATEMENT NEEDED
+                }
             }
         }
 

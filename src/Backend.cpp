@@ -917,6 +917,40 @@ void Backend::run_etf_holdings_operations(const std::string &ticker)
 }
 
 // PUBLIC
+bool Backend::run_api_confirmation_window_operations(GLuint *out_texture, int *out_width, int *out_height)
+{
+    bool image_prep = fileops->prep_image_file_data();
+
+    if (!image_prep)
+        return image_prep;
+
+    const std::vector<unsigned char> *data_ptr = fileops->get_file_data();
+    const std::size_t &fsize = fileops->get_file_size();
+    int image_width = 0;
+    int image_height = 0;
+    unsigned char *image_data = stbi_load_from_memory(data_ptr->data(), (int)fsize, &image_width, &image_height, NULL, 4);
+    if (image_data == NULL)
+        return false;
+    GLuint image_texture;
+    glGenTextures(1, &image_texture);
+    glBindTexture(GL_TEXTURE_2D, image_texture);
+
+    // Setup filtering parameters for display
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Upload pixels into texture
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+    stbi_image_free(image_data);
+
+    *out_texture = image_texture;
+    *out_width = image_width;
+    *out_height = image_height;
+    return true;
+}
+
+// PUBLIC
 bool Backend::summary_already_generated(const std::string &ticker)
 {
     const std::vector<Metrics> &immut_met_vec = jsonparseops->get_immutable_metrics_vec();

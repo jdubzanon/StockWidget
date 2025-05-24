@@ -53,12 +53,14 @@ file(GLOB IMPLOT_H libs/implot/*.h)
 file(GLOB IMPLOT_CPP libs/implot/*.cpp)
 set(IMPLOT_ADDON ${IMPLOT_H} ${IMPLOT_CPP})
 
+#ADDING STB
+file(GLOB STB_LIB_H libs/stb/*.h)
 
 set(ALL_IMGUI_SOURCES ${IMGUI_ROOT_SOURCES} ${IMGUI_ADDITIONAL_SOURCES} ${IMPLOT_ADDON})
 
 
 
-add_library(stocklib ${LIB_SOURCES} ${ALL_IMGUI_SOURCES})
+add_library(stocklib ${LIB_SOURCES} ${ALL_IMGUI_SOURCES} ${STB_LIB_H})
 
 # Specify where the library looks for headers
 target_include_directories(stocklib PUBLIC 
@@ -67,6 +69,7 @@ target_include_directories(stocklib PUBLIC
 		libs/imgui/backends
 	 	libs/glfw/include
 	 	libs/implot
+        libs/stb
 	 	/usr/include/crypto++
 )
 
@@ -89,6 +92,8 @@ target_link_libraries(StockWidget PRIVATE stocklib)
 
 #compile conditions, commented out .deb build, TO RUN FROM COMPILE YOU MUST UNCOMMENT IF ITS COMMENTED OUT !!
 target_compile_definitions(StockWidget PRIVATE DEV_MODE)
+target_compile_definitions(stocklib PRIVATE DEV_MODE)
+
 
 
 # Install binary
@@ -96,6 +101,10 @@ install(TARGETS StockWidget DESTINATION bin)
 
 # Install desktop entry
 install(FILES widget.desktop DESTINATION share/applications)
+
+#install image for api config success
+install(FILES images/api_conf_image.png DESTINATION share/stockwidget/images)
+
 
 # Install icon
 install(FILES icons/stockwidget.png DESTINATION share/icons/hicolor/256x256/apps)

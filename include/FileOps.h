@@ -29,6 +29,7 @@ private:
     std::fstream watchlistfile;
     std::fstream enc_api_file;
     std::fstream api_key_iv_file;
+    std::fstream image_file;
 
     std::vector<std::string> watchlist_tracker;
     // FILE NAMES
@@ -48,6 +49,10 @@ private:
         {640, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write | std::filesystem::perms::group_read},
         {400, std::filesystem::perms::owner_read}};
 
+    // IMAGE FILE STUFF
+    std::vector<unsigned char> file_data;
+    std::size_t file_size;
+
 private:
     bool create_file(const std::string &path);
     int openfile_operation(std::fstream &file, const std::string &path, const std::ios::openmode &type);
@@ -61,6 +66,7 @@ private:
     int get_preferred_octals(const std::string &path);
     bool create_directories();
     bool create_files();
+    std::string get_image_filepath() const;
 
 public:
     void system_init();
@@ -85,6 +91,9 @@ public:
     std::vector<uint8_t> read_api_enc_file();
     bool confirm_ticker_added_to_file(const std::string &ticker);
     bool confirm_ticker_deletion(const std::string &ticker);
+    // IMAGE FILE STUFF
+    const std::vector<unsigned char> *get_file_data();
+    const std::size_t &get_file_size() const;
+    bool prep_image_file_data();
 };
-
 #endif
