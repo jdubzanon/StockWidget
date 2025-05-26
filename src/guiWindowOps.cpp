@@ -1317,17 +1317,16 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
 {
 
     int pos = backendops->get_chart_obj_position_in_vec(ticker);
+    if ((pos == -1))
+    {
+        return false;
+    }
 
     ImGuiWindowFlags flags;
     if (program_state.trigger_error || program_state.adding_api || program_state.changing_api || program_state.adding_to_watchlist || program_state.apikey_confirmation_success)
         flags = flag_settings.with_error_flags_charts;
     else
         flags = flag_settings.no_error_flags_charts;
-
-    if ((pos == -1))
-    {
-        return false;
-    }
 
     ChartInfo &object_ref = chart_info_vec->at(pos);
     bool &open_ref = chart_booleans.at(ticker);

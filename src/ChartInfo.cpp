@@ -41,34 +41,34 @@ void ChartInfo::set_api_def(const char *def)
     error_def = def;
 }
 
-std::vector<double> &ChartInfo::get_price_data_ref()
+std::vector<double> &ChartInfo::get_price_data_ref(const std::string &yr)
 {
-    return price_data_vec;
+    return price_data_vectors.at(yr);
 }
 
-std::vector<double> &ChartInfo::get_timestamp_ref()
+std::vector<double> &ChartInfo::get_timestamp_ref(const std::string &yr)
 {
-    return timestamps_vec;
+    return timestamp_vectors.at(yr);
 }
 
-void ChartInfo::set_avg_price(const double &p)
+void ChartInfo::set_avg_price(const double &p, const std::string &yr)
 {
-    avg_price = p;
+    avg_prices.at(yr) = p;
 }
 
-const double &ChartInfo::get_avg_price() const
+const double &ChartInfo::get_avg_price(const std::string &yr) const
 {
-    return avg_price;
+    return avg_prices.at(yr);
 }
 
-std::vector<double> &ChartInfo::get_below_avg_vec()
+std::vector<double> &ChartInfo::get_below_avg_vec(const std::string &yr)
 {
-    return below_avg_data_vec;
+    return below_avg_vectors.at(yr);
 }
 
-const std::vector<double> &ChartInfo::get_below_avg_vec_const() const
+const std::vector<double> &ChartInfo::get_below_avg_vec_const(const std::string &yr) const
 {
-    return below_avg_data_vec;
+    return below_avg_vectors.at(yr);
 }
 
 const bool &ChartInfo::get_is_displaying() const
