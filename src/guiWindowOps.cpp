@@ -98,7 +98,6 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
     }
     if (selected_action == 0)
     {
-
         if (!backendops->chart_already_generated(stock.get_ticker()))
         {
             backendops->add_chart_obj_to_vector(stock.get_ticker());
