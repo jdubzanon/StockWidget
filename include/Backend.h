@@ -53,16 +53,19 @@ public:
     bool run_multi_watchlist_api_calls_operations();
     bool run_financials_operations(const std::string &ticker);
     bool run_generate_summary_operations(const std::string &ticker);
-    bool run_charting_operations(const std::string &ticker);
+    bool run_charting_operations(const std::string &ticker, const std::string &requested_yr);
     void run_etf_holdings_operations(const std::string &ticker);
     bool financial_report_already_generated(const std::string &ticker);
+    // CHARTS
     bool chart_already_generated(const std::string &ticker);
+    void add_chart_obj_to_vector(const std::string &ticker);
+    int get_chart_obj_position_in_vec(const std::string &ticker);
+
     bool summary_already_generated(const std::string &ticker);
     bool etf_holdings_already_generated(const std::string &ticker);
     int find_column(const std::string &date, StockFinancials::BalanceSheetItems *ptr);
     int find_column(const std::string &date, StockFinancials::CashflowItems *ptr);
     size_t get_metrics_position_in_vec(const std::string &ticker);
-    int get_chart_obj_position_in_vec(const std::string &ticker);
     int get_holdings_position_in_vec(const std::string &ticker);
     std::vector<StockFinancials> *pass_stock_financial_vec_ptr_non_const();
     std::vector<Metrics> *pass_metrics_ptr();

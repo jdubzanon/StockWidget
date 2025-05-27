@@ -33,6 +33,11 @@ private:
     std::unordered_map<std::string, std::string> summary_map;
     std::unordered_map<std::string, std::string> holdings_map;
 
+    std::unordered_map<std::string, std::string> chart_tail_options{
+        {"1yr", "&region=US&lang=en-US&useYfid=true&includeAdjustedClose=true&events=div%2Csplit%2Cearn&range=1y&interval=1d&includePrePost=false"},
+        {"2yr", "&region=US&lang=en-US&useYfid=true&includeAdjustedClose=true&events=div%2Csplit%2Cearn&range=2y&interval=1d&includePrePost=false"},
+        {"5yr", "&region=US&lang=en-US&useYfid=true&includeAdjustedClose=true&events=div%2Csplit%2Cearn&range=5y&interval=1d&includePrePost=false"}};
+
 private:
     // must be ran for every MULTI curl call BEGIN
     void set_up_multi_handle_watchlist(const std::vector<std::string> &urls, const std::string &key);
@@ -70,7 +75,7 @@ public:
     // when user adds another ticker to watchlist
     bool perform_single_request_watchlist(const std::string &ticker, const std::string &key);
     bool perform_single_request_summary(const std::string &ticker, const std::string &key);
-    void perform_single_request_charts(const std::string &ticker, const std::string &key, ChartInfo &c);
+    void perform_single_request_charts(const std::string &ticker, const std::string &key, ChartInfo &c, const std::string &request_yr);
 
     // TESTING
 };

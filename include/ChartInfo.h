@@ -15,27 +15,27 @@ private:
     std::unordered_map<std::string, std::string> response_map;
     std::unordered_map<std::string, std::vector<double>> price_data_vectors{
         {"1yr", std::vector<double>{}},
-        {"3yr", std::vector<double>{}},
+        {"2yr", std::vector<double>{}},
         {"5yr", std::vector<double>{}}
 
     };
     std::unordered_map<std::string, std::vector<double>> timestamp_vectors{
         {"1yr", std::vector<double>{}},
-        {"3yr", std::vector<double>{}},
+        {"2yr", std::vector<double>{}},
         {"5yr", std::vector<double>{}}
 
     };
     std::unordered_map<std::string, std::vector<double>> below_avg_vectors{
         {"1yr", std::vector<double>{}},
-        {"3yr", std::vector<double>{}},
+        {"2yr", std::vector<double>{}},
         {"5yr", std::vector<double>{}}
 
     };
 
     std::unordered_map<std::string, double> avg_prices{
-        {"1y", double{}},
-        {"3y", double{}},
-        {"5y", double{}}};
+        {"1yr", double{}},
+        {"2yr", double{}},
+        {"5yr", double{}}};
 
 public:
     ChartInfo(const std::string &t);

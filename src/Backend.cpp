@@ -768,28 +768,24 @@ bool Backend::run_generate_summary_operations(const std::string &ticker)
 }
 
 // PUBLIC
-bool Backend::run_charting_operations(const std::string &ticker)
+bool Backend::run_charting_operations(const std::string &ticker, const std::string &requested_yr)
 {
     encryptops->clear_map();
     std::string api_key = "";
     api_key = run_decrypt_apikey_operations();
     encryptops->clear_map();
-    ChartInfo c_info(ticker);
-    ChartInfo &ref = c_info;
 
-    requestops->perform_single_request_charts(ticker, api_key, ref);
+    int pos = get_chart_obj_position_in_vec(ticker);
+    std::vector<ChartInfo> &chart_vec = jsonparseops->get_chart_info_vec();
+    ChartInfo &c_info = chart_vec.at(pos);
+
+    requestops->perform_single_request_charts(ticker, api_key, c_info, requested_yr);
 
     if (c_info.get_api_chart_error())
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, c_info.get_error_def());
 
-    int lastitem;
-    std::vector<ChartInfo> &chart_vec = jsonparseops->get_chart_info_vec();
-    chart_vec.push_back(std::move(c_info));
-    lastitem = chart_vec.size() - 1;
-    ChartInfo &c = (jsonparseops->get_mutable_chart_info_vec())[lastitem];
-
     // FOR INERNET CONNECTION
-    std::unordered_map<std::string, std::string> &mutable_chart_response_map = c.get_mutable_chart_respone_map();
+    std::unordered_map<std::string, std::string> &mutable_chart_response_map = c_info.get_mutable_chart_respone_map();
     if (mutable_chart_response_map.empty())
         throw BackendException(BackendException::ErrorType::API_CALL_FAILED, "bro..\nare you even connected to the internet?\nif so api might be down");
 
@@ -801,17 +797,17 @@ bool Backend::run_charting_operations(const std::string &ticker)
         confirm_apikey(response, mutable_chart_response_map);
     }
 
-    if (!jsonparseops->parse_chart_response(ticker, c))
+    if (!jsonparseops->parse_chart_response(ticker, c_info, requested_yr))
     {
         throw BackendException(BackendException::ErrorType::JSON_PARSE_FAILURE, "parse failed in charting operations");
     }
-    std::vector<double> &price_vec = c.get_price_data_ref();
+    std::vector<double> &price_vec = c_info.get_price_data_ref(requested_yr);
 
     // avg price  and below avg vec is for custom shading of the chart
     double avg = (std::accumulate(price_vec.begin(), price_vec.end(), 0.0f)) / price_vec.size();
-    std::vector<double> &below_avg_vec = c.get_below_avg_vec();
+    std::vector<double> &below_avg_vec = c_info.get_below_avg_vec(requested_yr);
 
-    c.set_avg_price(avg);
+    c_info.set_avg_price(avg, requested_yr);
 
     for (auto it = price_vec.begin(); it != price_vec.end(); it++)
     {
@@ -828,7 +824,7 @@ bool Backend::run_charting_operations(const std::string &ticker)
 
     // IF IM PARSING ITS DISPLAYING ITS ALL PART OF THE PROCESS, USING THIS FOR MY GUIWINDOWOPS CHART MANAGAGER
     // SEE guiWindowOps::run_chart_vec_manager() FOR MORE INFO
-    c.set_is_displaying(true);
+    c_info.set_is_displaying(true);
     return true;
 }
 
@@ -1070,6 +1066,14 @@ bool Backend::chart_already_generated(const std::string &ticker)
     return false;
 };
 
+// PUBLIC
+void Backend::add_chart_obj_to_vector(const std::string &ticker)
+{
+    ChartInfo chartinfo(ticker);
+    std::vector<ChartInfo> &chart_vec = jsonparseops->get_chart_info_vec();
+    chart_vec.push_back(std::move(chartinfo));
+}
+
 std::vector<StockFinancials> *Backend::pass_stock_financial_vec_ptr_non_const()
 {
     return jsonparseops->get_financial_vec_ptr_non_const();
@@ -1089,6 +1093,11 @@ std::vector<ETF_Holdings> *Backend::pass_etf_holdings_vec_ptr()
 {
     return jsonparseops->get_etf_holdings_vec_ptr();
 }
+
+// std::vector<StockInfo> *Backend::pass_stockinfo_vec_ptr()
+// {
+//     return jsonparseops->;
+// }
 
 // PRIVATE
 std::string Backend::get_quote_type_from_stockinfo_vec(const std::string &ticker, const std::string &quote_type)

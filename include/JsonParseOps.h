@@ -83,7 +83,7 @@ public:
     bool parse_summary_crypto(const std::string &returned_json, Metrics &m);
     std::vector<Metrics> *get_metrics_vec_ptr();
     // CHART STUFF
-    bool parse_chart_response(const std::string &ticker, ChartInfo &c);
+    bool parse_chart_response(const std::string &ticker, ChartInfo &c, const std::string &requested_yr);
     std::vector<ChartInfo> &get_chart_info_vec();
     const std::vector<ChartInfo> &get_immutable_chart_info_vec() const;
     std::vector<ChartInfo> &get_mutable_chart_info_vec();

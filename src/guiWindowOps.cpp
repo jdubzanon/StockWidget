@@ -98,24 +98,30 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
     }
     if (selected_action == 0)
     {
+
         if (!backendops->chart_already_generated(stock.get_ticker()))
         {
+            backendops->add_chart_obj_to_vector(stock.get_ticker());
             chart_booleans.at(stock.get_ticker()) = true;
+
             program_state.dropbox_chart_clicked = true;
             api_workflow.need_make_api = true;
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
+            api_workflow.yr_requested = "1yr";
         }
         else
         {
-            chart_booleans.at(stock.get_ticker()) = true;
+            if (!chart_booleans.at(stock.get_ticker()))
+                chart_booleans.at(stock.get_ticker()) = true;
+            api_workflow.yr_requested = "1yr";
         }
     }
     else if (selected_action == 1)
     {
         // ONLY EQUITYS HAVE FINANCIAL REPORTS
-        if (stock.get_quote_type() == "EQUITY") // GUARD AGAINST DEFAULT OPTION, IF stock.quote_type() is other than known definitions
+        if (stock.get_quote_type() == "EQUITY") // redundancy
         {
             if (!backendops->financial_report_already_generated(stock.get_ticker()))
             {
@@ -182,16 +188,21 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
     {
         if (!backendops->chart_already_generated(stock.get_ticker()))
         {
+            backendops->add_chart_obj_to_vector(stock.get_ticker());
             chart_booleans.at(stock.get_ticker()) = true;
+
             program_state.dropbox_chart_clicked = true;
             api_workflow.need_make_api = true;
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
+            api_workflow.yr_requested = "1yr";
         }
         else
         {
-            chart_booleans.at(stock.get_ticker()) = true;
+            if (!chart_booleans.at(stock.get_ticker()))
+                chart_booleans.at(stock.get_ticker()) = true;
+            api_workflow.yr_requested = "1yr";
         }
     }
 
@@ -248,19 +259,61 @@ void guiWindowOps::generate_crypto_dropbox(const StockInfo &stock)
     {
         if (!backendops->chart_already_generated(stock.get_ticker()))
         {
+            backendops->add_chart_obj_to_vector(stock.get_ticker());
             chart_booleans.at(stock.get_ticker()) = true;
+
             program_state.dropbox_chart_clicked = true;
             api_workflow.need_make_api = true;
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
+            api_workflow.yr_requested = "1yr";
         }
         else
         {
-            chart_booleans.at(stock.get_ticker()) = true;
+            if (!chart_booleans.at(stock.get_ticker()))
+                chart_booleans.at(stock.get_ticker()) = true;
+            api_workflow.yr_requested = "1yr";
         }
     }
     else if (selected_action == 1)
+    {
+        try
+        {
+            delete_operations(stock.get_ticker());
+        }
+        catch (BackendException &e)
+        {
+            temp_message = e.what();
+            program_state.trigger_error = true;
+            api_workflow.try_again = false;
+        }
+    }
+
+    selected_action = -1;
+}
+
+void guiWindowOps::generate_unsupported_dropbox(const StockInfo &stock)
+{
+    // DROPBOX CODE BELOW
+    const char *action_items[] = {"Delete"};
+    static int selected_action = -1;
+    std::string dropbox_label = stock.get_ticker() + "\n" + "Actions";
+    const char *preview_value = (selected_action == -1) ? "Select Action" : action_items[selected_action];
+    if (ImGui::BeginCombo(dropbox_label.c_str(), preview_value))
+    {
+        for (int n = 0; n < IM_ARRAYSIZE(action_items); n++)
+        {
+            bool is_selected = (selected_action == n);
+            if (ImGui::Selectable(action_items[n], is_selected))
+            {
+                selected_action = n;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    if (selected_action == 0)
     {
         try
         {
@@ -694,9 +747,42 @@ void guiWindowOps::show_metrics_prompt(bool &ref, ImFont *small_font, bool suppo
     ImGui::End();
 }
 
+bool guiWindowOps::run_charting_ops(ChartInfo &object_ref)
+{
+    std::vector<double> &plots = object_ref.get_price_data_ref(api_workflow.yr_requested);
+    std::vector<double> &tstamps = object_ref.get_timestamp_ref(api_workflow.yr_requested);
+    const std::vector<double> &below_avg = object_ref.get_below_avg_vec_const(api_workflow.yr_requested);
+    int size = static_cast<int>(tstamps.size());
+    const double &avg = object_ref.get_avg_price(api_workflow.yr_requested);
+    std::string stock_price_label = object_ref.get_ticker() + " Price";
+    std::string axis_two_label = object_ref.get_ticker() + " Avg Price";
+    std::string chart_label = object_ref.get_ticker() + " " + api_workflow.yr_requested + " Chart";
+    if (plots.empty() || tstamps.empty())
+        return false;
+    std::ostringstream avg_oss;
+    avg_oss << "Below avg price of " << std::fixed << std::setprecision(2) << object_ref.get_avg_price(api_workflow.yr_requested);
+    if (ImPlot::BeginPlot(chart_label.c_str()))
+    {
+
+        ImPlot::SetupAxisScale(ImAxis_X1, ImPlotScale_Time);
+        ImPlot::SetupAxisFormat(ImAxis_Y1, "%.2f");
+        // PLOT 1
+        ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(0, 0, 0, 0));
+        ImPlot::PlotLine(stock_price_label.c_str(), tstamps.data(), plots.data(), size, ImPlotFlags_None);
+        ImPlot::PopStyleColor();
+
+        ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1.0f, 0.2f, 0.2f, 0.25f));
+        ImPlot::PlotShaded(avg_oss.str().c_str(), tstamps.data(), below_avg.data(), size, avg);
+        ImPlot::PopStyleColor();
+        ImPlot::EndPlot();
+    }
+    return true;
+}
+
 // ##############################################PUBLIC#######################
 
-std::vector<StockInfo> *guiWindowOps::get_watchlist_vec_ptr()
+std::vector<StockInfo> *
+guiWindowOps::get_watchlist_vec_ptr()
 {
     return watchlist_vec;
 }
@@ -755,7 +841,7 @@ void guiWindowOps::delete_from_boolean_map(std::unordered_map<std::string, bool>
 }
 
 // PUBLIC
-void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool mulit_financial_call, bool multi_watchlist_call, bool multi_etf_holdings_call, bool summary_call, bool chart_call, const char *ticker)
+void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool mulit_financial_call, bool multi_watchlist_call, bool multi_etf_holdings_call, bool summary_call, bool chart_call, const char *ticker, const std::string &requested_yr)
 {
 
     if (single_call)
@@ -773,7 +859,8 @@ void guiWindowOps::make_api_call(bool single_call, bool watchlistCall, bool apiK
 
         if (chart_call)
         {
-            backendops->run_charting_operations(std::string(ticker));
+
+            backendops->run_charting_operations(std::string(ticker), requested_yr);
         }
 
         if (apiKeyCall) //
@@ -1002,7 +1089,7 @@ void guiWindowOps::generate_watchlist(GLFWwindow *window, ImFont *large_font, Im
                     generate_crypto_dropbox(stock);
 
                 else
-                    generate_equity_dropbox(stock);
+                    generate_unsupported_dropbox(stock);
 
                 ImGui::PopStyleColor(4);
 
@@ -1316,7 +1403,9 @@ void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_chan
 bool guiWindowOps::display_chart_window(const std::string &ticker)
 {
 
+    bool success = true;
     int pos = backendops->get_chart_obj_position_in_vec(ticker);
+
     if ((pos == -1))
     {
         return false;
@@ -1335,38 +1424,56 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     oss << ticker << " Chart";
     std::string windowid = oss.str();
 
-    ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(900, 350), ImGuiCond_FirstUseEver);
     ImGui::PushStyleColor(ImGuiCol_TitleBg | ImGuiCol_TitleBgActive, ImVec4(0.6f, 0.48f, 0.0f, 1.0f));
     ImGui::Begin(windowid.c_str(), &open_ref, flags);
-    std::vector<double> &plots = object_ref.get_price_data_ref();
-    std::vector<double> &tstamps = object_ref.get_timestamp_ref();
-    const std::vector<double> &below_avg = object_ref.get_below_avg_vec_const();
-    int size = static_cast<int>(tstamps.size());
-    const double &avg = object_ref.get_avg_price();
-
-    std::string stock_price_label = object_ref.get_ticker() + " Price";
-    std::string axis_two_label = object_ref.get_ticker() + " Avg Price";
-    std::string chart_label = object_ref.get_ticker() + " 1yr Chart";
-    std::ostringstream avg_oss;
-    avg_oss << "Below avg price of " << std::fixed << std::setprecision(2) << object_ref.get_avg_price();
-    if (ImPlot::BeginPlot(chart_label.c_str()))
+    if (ImGui::BeginTabBar("##chart_options"))
     {
-
-        ImPlot::SetupAxisScale(ImAxis_X1, ImPlotScale_Time);
-        ImPlot::SetupAxisFormat(ImAxis_Y1, "%.2f");
-        // PLOT 1
-        ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(0, 0, 0, 0));
-        ImPlot::PlotLine(stock_price_label.c_str(), tstamps.data(), plots.data(), size, ImPlotFlags_None);
-        ImPlot::PopStyleColor();
-
-        ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1.0f, 0.2f, 0.2f, 0.25f));
-        ImPlot::PlotShaded(avg_oss.str().c_str(), tstamps.data(), below_avg.data(), size, avg);
-        ImPlot::PopStyleColor();
-        ImPlot::EndPlot();
+        if (ImGui::BeginTabItem("1yr chart"))
+        {
+            api_workflow.yr_requested = "1yr";
+            success = run_charting_ops(object_ref);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("2yr chart"))
+        {
+            api_workflow.yr_requested = "2yr";
+            if (object_ref.get_price_data_ref(api_workflow.yr_requested).empty())
+            {
+                api_workflow.need_make_api = true;
+                api_workflow.single_api_call = true;
+                api_workflow.chart_call = true;
+                api_workflow.ticker = object_ref.get_ticker();
+            }
+            else
+            {
+                success = run_charting_ops(object_ref);
+            }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("5yr chart"))
+        {
+            api_workflow.yr_requested = "5yr";
+            if (object_ref.get_price_data_ref(api_workflow.yr_requested).empty())
+            {
+                api_workflow.need_make_api = true;
+                api_workflow.single_api_call = true;
+                api_workflow.chart_call = true;
+                api_workflow.ticker = object_ref.get_ticker();
+            }
+            else
+            {
+                success = run_charting_ops(object_ref);
+            }
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
     ImGui::End();
     ImGui::PopStyleColor();
-    return true;
+    return success;
+
+    return false;
 }
 
 // PUBLIC

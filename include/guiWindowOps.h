@@ -26,6 +26,7 @@ private:
     void generate_equity_dropbox(const StockInfo &stock);
     void generate_etf_dropbox(const StockInfo &stock);
     void generate_crypto_dropbox(const StockInfo &stock);
+    void generate_unsupported_dropbox(const StockInfo &stock);
     void openWebsite(const char *url);
     void reset_arr();
     void set_window_parameters(GLFWwindow *window, ImFont *font_change);
@@ -41,6 +42,7 @@ private:
     void generate_profit_margin_chart(StockFinancials::EarningsItems *ptr);
     void generate_metrics_table(const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr, const std::string &ticker);
     void generate_metrics_table_special(const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr, const std::string &ticker);
+    bool run_charting_ops(ChartInfo &object_ref);
 
 private:
     struct
@@ -92,6 +94,7 @@ public:
         bool multi_etf_holdings_call = false;
         bool try_again = false;
         std::string ticker = "none";
+        std::string yr_requested;
     } api_workflow;
 
     struct
@@ -114,7 +117,7 @@ public:
     guiWindowOps();
     ~guiWindowOps();
     // ACTIONS
-    void make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool multi_financial_call, bool multi_watchlist_call, bool multi_etf_holding_call, bool summary_call, bool chart_call, const char *ticker);
+    void make_api_call(bool single_call, bool watchlistCall, bool apiKeyCall, bool multi_financial_call, bool multi_watchlist_call, bool multi_etf_holding_call, bool summary_call, bool chart_call, const char *ticker, const std::string &requested_yr);
     void delete_from_boolean_map(std::unordered_map<std::string, bool> &map, const std::string &s);
     void setup_window_boolean_maps();
     void reset_necessary_guiops_booleans();

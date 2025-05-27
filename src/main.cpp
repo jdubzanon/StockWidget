@@ -163,13 +163,6 @@ int main()
             g->add_to_watchlist_window(window, midsize_font, g->popup_booleans.open_add_to_watchlist_window);
         }
 
-        // GENERATE THE WINDOW IF AN API CALL IS NEEDED
-        if (!g->program_state.program_startup && g->api_workflow.need_make_api)
-        {
-            g->popup_booleans.making_api_call_window = true;
-            g->making_api_call_window(window, midsize_font, g->api_workflow.need_make_api);
-        }
-
         // OPENING STOCK FINANCIALS WINDOW
         for (const auto &pair : financial_booleans_map)
         {
@@ -203,6 +196,12 @@ int main()
                     // NO STATEMENT NEEDED
                 }
             }
+        }
+        // GENERATE THE WINDOW IF AN API CALL IS NEEDED
+        if (!g->program_state.program_startup && g->api_workflow.need_make_api)
+        {
+            g->popup_booleans.making_api_call_window = true;
+            g->making_api_call_window(window, midsize_font, g->api_workflow.need_make_api);
         }
 
         g->run_chart_vec_manager();
@@ -244,7 +243,8 @@ int main()
                                      g->api_workflow.multi_etf_holdings_call,
                                      g->api_workflow.summary_call = false,
                                      g->api_workflow.chart_call = false,
-                                     g->api_workflow.ticker.c_str());
+                                     g->api_workflow.ticker.c_str(),
+                                     g->api_workflow.yr_requested = "none");
                 }
                 catch (BackendException &e)
                 {
@@ -286,7 +286,8 @@ int main()
                                      g->api_workflow.multi_etf_holdings_call = false,
                                      g->api_workflow.summary_call,
                                      g->api_workflow.chart_call,
-                                     g->api_workflow.ticker.c_str());
+                                     g->api_workflow.ticker.c_str(),
+                                     g->api_workflow.yr_requested);
                 }
                 catch (BackendException &e)
                 {

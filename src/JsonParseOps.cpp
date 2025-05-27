@@ -830,12 +830,13 @@ bool JsonParseOps::parse_summary_crypto(const std::string &returned_json, Metric
     return true;
 }
 
-bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c)
+bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c, const std::string &requested_yr)
 {
 
     const std::unordered_map<std::string, std::string> &response_map = c.get_immutable_chart_respone_map();
 
     const std::string &returned_json = response_map.at(ticker);
+
     Json::CharReaderBuilder reader;
     Json::Value jsonData;
     std::string errs;
@@ -843,6 +844,7 @@ bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c)
     std::istringstream stream(returned_json);
     if (!Json::parseFromStream(reader, stream, &jsonData, &errs))
         return false;
+
     if (jsonData.isNull() || jsonData.empty())
         return false;
     Json::Value *root = &jsonData["chart"];
@@ -880,13 +882,13 @@ bool JsonParseOps::parse_chart_response(const std::string &ticker, ChartInfo &c)
         }
     }
 
-    std::vector<double> &chart_data = c.get_price_data_ref();
+    std::vector<double> &chart_data = c.get_price_data_ref(requested_yr);
     for (auto &v : *root)
     {
         chart_data.push_back(v.asDouble());
     }
 
-    std::vector<double> &ts_ref = c.get_timestamp_ref();
+    std::vector<double> &ts_ref = c.get_timestamp_ref(requested_yr);
     for (auto &v : *ts_root)
     {
         ts_ref.push_back(v.asDouble());

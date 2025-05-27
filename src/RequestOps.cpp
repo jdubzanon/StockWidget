@@ -427,10 +427,10 @@ bool RequestOps::perform_single_request_summary(const std::string &ticker, const
     return (ret == CURLE_OK);
 }
 
-void RequestOps::perform_single_request_charts(const std::string &ticker, const std::string &key, ChartInfo &c)
+void RequestOps::perform_single_request_charts(const std::string &ticker, const std::string &key, ChartInfo &c, const std::string &requested_yr)
 {
     std::string url_head = "https://yahoo-finance-real-time1.p.rapidapi.com/stock/get-chart?symbol=";
-    std::string url_tail = "&region=US&lang=en-US&useYfid=true&includeAdjustedClose=true&events=div%2Csplit%2Cearn&range=1y&interval=1d&includePrePost=false";
+    std::string url_tail = chart_tail_options.at(requested_yr);
     std::string url_concat = url_head + ticker + url_tail;
     CURL *handle = curl_easy_init();
     if (!handle)
@@ -449,6 +449,9 @@ void RequestOps::perform_single_request_charts(const std::string &ticker, const 
     curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
 
     std::unordered_map<std::string, std::string> &chart_map = c.get_mutable_chart_respone_map();
+    if (!chart_map.empty())
+        chart_map.clear();
+
     chart_map[ticker] = "";
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, chartWriteCallback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, &chart_map[ticker]);
