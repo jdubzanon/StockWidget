@@ -109,13 +109,13 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
         }
     }
     else if (selected_action == 1)
@@ -196,13 +196,13 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
         }
     }
 
@@ -267,13 +267,13 @@ void guiWindowOps::generate_crypto_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.yr_requested = "1yr";
+            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
         }
     }
     else if (selected_action == 1)
@@ -747,20 +747,20 @@ void guiWindowOps::show_metrics_prompt(bool &ref, ImFont *small_font, bool suppo
     ImGui::End();
 }
 
-bool guiWindowOps::run_charting_ops(ChartInfo &object_ref)
+bool guiWindowOps::run_charting_ops(ChartInfo &object_ref, const std::string &ticker)
 {
-    std::vector<double> &plots = object_ref.get_price_data_ref(api_workflow.yr_requested);
-    std::vector<double> &tstamps = object_ref.get_timestamp_ref(api_workflow.yr_requested);
-    const std::vector<double> &below_avg = object_ref.get_below_avg_vec_const(api_workflow.yr_requested);
+    std::vector<double> &plots = object_ref.get_price_data_ref(api_workflow.chart_yr_display_tracker.at(ticker));
+    std::vector<double> &tstamps = object_ref.get_timestamp_ref(api_workflow.chart_yr_display_tracker.at(ticker));
+    const std::vector<double> &below_avg = object_ref.get_below_avg_vec_const(api_workflow.chart_yr_display_tracker.at(ticker));
     int size = static_cast<int>(tstamps.size());
-    const double &avg = object_ref.get_avg_price(api_workflow.yr_requested);
+    const double &avg = object_ref.get_avg_price(api_workflow.chart_yr_display_tracker.at(ticker));
     std::string stock_price_label = object_ref.get_ticker() + " Price";
     std::string axis_two_label = object_ref.get_ticker() + " Avg Price";
-    std::string chart_label = object_ref.get_ticker() + " " + api_workflow.yr_requested + " Chart";
+    std::string chart_label = object_ref.get_ticker() + " " + api_workflow.chart_yr_display_tracker.at(ticker) + " Chart";
     if (plots.empty() || tstamps.empty())
         return false;
     std::ostringstream avg_oss;
-    avg_oss << "Below avg price of " << std::fixed << std::setprecision(2) << object_ref.get_avg_price(api_workflow.yr_requested);
+    avg_oss << "Below avg price of " << std::fixed << std::setprecision(2) << object_ref.get_avg_price(api_workflow.chart_yr_display_tracker.at(ticker));
     if (ImPlot::BeginPlot(chart_label.c_str()))
     {
 
@@ -1431,14 +1431,14 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     {
         if (ImGui::BeginTabItem("1yr chart"))
         {
-            api_workflow.yr_requested = "1yr";
-            success = run_charting_ops(object_ref);
+            api_workflow.chart_yr_display_tracker.at(ticker) = "1yr";
+            success = run_charting_ops(object_ref, ticker);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("2yr chart"))
         {
-            api_workflow.yr_requested = "2yr";
-            if (object_ref.get_price_data_ref(api_workflow.yr_requested).empty())
+            api_workflow.chart_yr_display_tracker.at(ticker) = "2yr";
+            if (object_ref.get_price_data_ref(api_workflow.chart_yr_display_tracker.at(ticker)).empty())
             {
                 api_workflow.need_make_api = true;
                 api_workflow.single_api_call = true;
@@ -1447,14 +1447,14 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
             }
             else
             {
-                success = run_charting_ops(object_ref);
+                success = run_charting_ops(object_ref, ticker);
             }
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("5yr chart"))
         {
-            api_workflow.yr_requested = "5yr";
-            if (object_ref.get_price_data_ref(api_workflow.yr_requested).empty())
+            api_workflow.chart_yr_display_tracker.at(ticker) = "5yr";
+            if (object_ref.get_price_data_ref(api_workflow.chart_yr_display_tracker.at(ticker)).empty())
             {
                 api_workflow.need_make_api = true;
                 api_workflow.single_api_call = true;
@@ -1463,7 +1463,7 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
             }
             else
             {
-                success = run_charting_ops(object_ref);
+                success = run_charting_ops(object_ref, ticker);
             }
             ImGui::EndTabItem();
         }

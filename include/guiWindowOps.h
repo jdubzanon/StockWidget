@@ -42,7 +42,7 @@ private:
     void generate_profit_margin_chart(StockFinancials::EarningsItems *ptr);
     void generate_metrics_table(const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr, const std::string &ticker);
     void generate_metrics_table_special(const std::vector<std::unordered_map<std::string, std::string>> *metrics_bucket_ptr, const std::string &ticker);
-    bool run_charting_ops(ChartInfo &object_ref);
+    bool run_charting_ops(ChartInfo &object_ref, const std::string &ticker);
 
 private:
     struct
@@ -94,7 +94,7 @@ public:
         bool multi_etf_holdings_call = false;
         bool try_again = false;
         std::string ticker = "none";
-        std::string yr_requested;
+        std::unordered_map<std::string, std::string> chart_yr_display_tracker{{"none", "none"}}; // none is for api multi calls; see main.cpp make_api_call
     } api_workflow;
 
     struct

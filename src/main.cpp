@@ -187,6 +187,7 @@ int main()
             }
         }
 
+        // OPEN ETF HOLDINGS
         for (const auto &pair : etf_window_booleans)
         {
             if (pair.second)
@@ -244,7 +245,7 @@ int main()
                                      g->api_workflow.summary_call = false,
                                      g->api_workflow.chart_call = false,
                                      g->api_workflow.ticker.c_str(),
-                                     g->api_workflow.yr_requested = "none");
+                                     g->api_workflow.chart_yr_display_tracker.at(g->api_workflow.ticker));
                 }
                 catch (BackendException &e)
                 {
@@ -287,7 +288,7 @@ int main()
                                      g->api_workflow.summary_call,
                                      g->api_workflow.chart_call,
                                      g->api_workflow.ticker.c_str(),
-                                     g->api_workflow.yr_requested);
+                                     g->api_workflow.chart_yr_display_tracker.at(g->api_workflow.ticker));
                 }
                 catch (BackendException &e)
                 {
