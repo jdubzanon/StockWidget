@@ -1471,9 +1471,8 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     }
     ImGui::End();
     ImGui::PopStyleColor();
-    return success;
 
-    return false;
+    return success;
 }
 
 // PUBLIC
