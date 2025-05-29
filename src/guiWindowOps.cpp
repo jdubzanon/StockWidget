@@ -108,13 +108,13 @@ void guiWindowOps::generate_equity_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
     }
     else if (selected_action == 1)
@@ -195,13 +195,13 @@ void guiWindowOps::generate_etf_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
     }
 
@@ -266,13 +266,13 @@ void guiWindowOps::generate_crypto_dropbox(const StockInfo &stock)
             api_workflow.single_api_call = true;
             api_workflow.chart_call = true;
             api_workflow.ticker = stock.get_ticker();
-            api_workflow.chart_yr_display_tracker[stock.get_ticker()] = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
         else
         {
             if (!chart_booleans.at(stock.get_ticker()))
                 chart_booleans.at(stock.get_ticker()) = true;
-            api_workflow.chart_yr_display_tracker.at(stock.get_ticker()) = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(stock.get_ticker(), "1yr");
         }
     }
     else if (selected_action == 1)
@@ -371,6 +371,11 @@ void guiWindowOps::delete_operations(const std::string &ticker)
     delete_from_boolean_map(chart_booleans, ticker);
     delete_from_boolean_map(etf_holdings_booleans, ticker);
     file_status.watchlist_empty = backendops->get_watchlist_file_status();
+    {
+        auto it = api_workflow.chart_yr_display_tracker.find(ticker);
+        if (it != api_workflow.chart_yr_display_tracker.end())
+            api_workflow.chart_yr_display_tracker.erase(it);
+    }
 }
 
 // PRIVATE
@@ -785,6 +790,8 @@ guiWindowOps::get_watchlist_vec_ptr()
 {
     return watchlist_vec;
 }
+
+// ################BOOLEANS MAPS########################3
 
 // PUBLIC
 const std::vector<StockFinancials> *guiWindowOps::get_fin_vec_ptr() const
@@ -1380,16 +1387,18 @@ void guiWindowOps::add_to_watchlist_window(GLFWwindow *window, ImFont *font_chan
     if (ImGui::Button("Add"))
     {
         popup_booleans.open_add_to_watchlist_window = false;
-        api_workflow.ticker = std::string(input_bucket);
+        std::string copy = std::string(input_bucket);
+        api_workflow.ticker = make_uppercase(copy);
         api_workflow.need_make_api = true;
         api_workflow.watchlist_call = true;
         api_workflow.api_key_entry_call = false; // redundancy
-        std::string copy = api_workflow.ticker;
-        std::string uppercase_copy = make_uppercase(copy);
-        financials_window_booleans.insert_or_assign(uppercase_copy, false);
-        selectable_booleans.insert_or_assign(uppercase_copy, false);
-        chart_booleans.insert_or_assign(uppercase_copy, false);
-        etf_holdings_booleans.insert_or_assign(uppercase_copy, false);
+        api_workflow.chart_yr_display_tracker.insert_or_assign(api_workflow.ticker, "");
+
+        // BOOLEAN MAPS
+        financials_window_booleans.insert_or_assign(api_workflow.ticker, false);
+        selectable_booleans.insert_or_assign(api_workflow.ticker, false);
+        chart_booleans.insert_or_assign(api_workflow.ticker, false);
+        etf_holdings_booleans.insert_or_assign(api_workflow.ticker, false);
         reset_arr();
     }
     if (ImGui::IsItemHovered())
@@ -1430,13 +1439,13 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
     {
         if (ImGui::BeginTabItem("1yr chart"))
         {
-            api_workflow.chart_yr_display_tracker.at(ticker) = "1yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(ticker, "1yr");
             success = run_charting_ops(object_ref, ticker);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("2yr chart"))
         {
-            api_workflow.chart_yr_display_tracker.at(ticker) = "2yr";
+            api_workflow.chart_yr_display_tracker.insert_or_assign(ticker, "2yr");
             if (object_ref.get_price_data_ref(api_workflow.chart_yr_display_tracker.at(ticker)).empty())
             {
                 api_workflow.need_make_api = true;
@@ -1452,6 +1461,7 @@ bool guiWindowOps::display_chart_window(const std::string &ticker)
         }
         if (ImGui::BeginTabItem("5yr chart"))
         {
+            api_workflow.chart_yr_display_tracker.insert_or_assign(ticker, "5yr");
             api_workflow.chart_yr_display_tracker.at(ticker) = "5yr";
             if (object_ref.get_price_data_ref(api_workflow.chart_yr_display_tracker.at(ticker)).empty())
             {
