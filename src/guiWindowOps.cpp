@@ -785,8 +785,7 @@ bool guiWindowOps::run_charting_ops(ChartInfo &object_ref, const std::string &ti
 
 // ##############################################PUBLIC#######################
 
-std::vector<StockInfo> *
-guiWindowOps::get_watchlist_vec_ptr()
+std::vector<StockInfo> *guiWindowOps::get_watchlist_vec_ptr()
 {
     return watchlist_vec;
 }
