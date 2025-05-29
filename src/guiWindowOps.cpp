@@ -1642,6 +1642,7 @@ void guiWindowOps::setup_window_boolean_maps()
         chart_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
         selectable_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
         financials_window_booleans.insert_or_assign(watchlist_item.get_ticker(), false);
+        api_workflow.chart_yr_display_tracker.insert_or_assign(watchlist_item.get_ticker(), "");
     }
 }
 
