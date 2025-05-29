@@ -380,7 +380,7 @@ std::string FileOps::get_image_filepath() const
 #ifdef DEV_MODE
     return "../images/api_conf_image.png";
 #else
-    return "/usr/share/stockwidget/images/api_conf_image.png";
+    return "/usr/local/share/stockwidget/images/api_conf_image.png";
 #endif
 }
 
