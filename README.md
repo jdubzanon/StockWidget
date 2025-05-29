@@ -1,5 +1,3 @@
-# CURRENTLY BROKEN DONT CLONE
-
 # StockWidget
 
 StockWidget is a graphical desktop application, FOR LINUX OS ONLY, that displays real-time stock market data using OpenGL, ImGui, and GLFW.
